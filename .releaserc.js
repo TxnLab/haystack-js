@@ -1,7 +1,7 @@
 export default {
   branches: ['main'],
   tagFormat: 'v${version}',
-  pkgRoot: 'packages/deflex',
+  pkgRoot: 'packages/haystack',
   plugins: [
     '@semantic-release/commit-analyzer',
     [
@@ -45,7 +45,7 @@ export default {
     [
       '@semantic-release/changelog',
       {
-        changelogFile: 'packages/deflex/CHANGELOG.md',
+        changelogFile: 'packages/haystack/CHANGELOG.md',
       },
     ],
     '@semantic-release/npm',
@@ -54,8 +54,8 @@ export default {
       '@semantic-release/git',
       {
         assets: [
-          'packages/deflex/CHANGELOG.md',
-          'packages/deflex/package.json',
+          'packages/haystack/CHANGELOG.md',
+          'packages/haystack/package.json',
         ],
         message:
           'chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}',

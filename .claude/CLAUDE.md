@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Deflex SDK is a TypeScript/JavaScript SDK for the Deflex Order Router - smart order routing and DEX aggregation on Algorand. This is a pnpm workspace monorepo containing the SDK package and example implementations.
+Haystack Router SDK is a TypeScript/JavaScript SDK for the Haystack Order Router - smart order routing and DEX aggregation on Algorand. This is a pnpm workspace monorepo containing the SDK package and example implementations.
 
 ## Commands
 
@@ -21,7 +21,7 @@ pnpm test:watch          # Watch mode
 pnpm test:coverage       # With coverage
 
 # Run a single test file
-pnpm --filter @txnlab/deflex vitest run tests/client.test.ts
+pnpm --filter @txnlab/haystack-router vitest run tests/client.test.ts
 
 # Linting and formatting
 pnpm lint                # ESLint
@@ -37,11 +37,11 @@ pnpm run ci
 
 ## Architecture
 
-### SDK Package (`packages/deflex/`)
+### SDK Package (`packages/haystack/`)
 
 The SDK exports from `src/index.ts`:
 
-- **client.ts** - `DeflexClient` class: Main entry point for interacting with the Deflex API. Handles quote fetching, swap transaction creation, and automatic asset opt-in detection.
+- **client.ts** - `RouterClient` class: Main entry point for interacting with the Haystack Router API. Handles quote fetching, swap transaction creation, and automatic asset opt-in detection.
 
 - **composer.ts** - `SwapComposer` class: Builder pattern for constructing atomic transaction groups. Manages transaction lifecycle (BUILDING → BUILT → SIGNED → SUBMITTED → COMMITTED). Supports adding custom transactions and ABI method calls before/after swaps.
 
@@ -54,14 +54,14 @@ The SDK exports from `src/index.ts`:
 ### Workspace Structure
 
 ```
-packages/deflex/     # Main SDK package (@txnlab/deflex)
+packages/haystack/     # Main SDK package (@txnlab/haystack-router)
 examples/
   react/             # React + Vite example
   react-query/       # React + TanStack Query example
   node-cli/          # Node.js CLI example
 ```
 
-Examples use `"@txnlab/deflex": "workspace:*"` to reference the local SDK.
+Examples use `"@txnlab/haystack-router": "workspace:*"` to reference the local SDK.
 
 ## Key Patterns
 

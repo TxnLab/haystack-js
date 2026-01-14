@@ -1,18 +1,18 @@
-# Deflex SDK - React Example
+# Haystack Router SDK - React Example
 
-A simple React application demonstrating basic Deflex SDK integration with Vite and `@txnlab/use-wallet-react` for wallet management.
+A simple React application demonstrating basic Haystack Router SDK integration with Vite and `@txnlab/use-wallet-react` for wallet management.
 
 ## Features
 
 - Multiple wallet support (Pera, Defly, Lute)
 - Modern wallet UI with `@txnlab/use-wallet-react` v4
-- Get swap quotes from Deflex API
+- Get swap quotes from Haystack Router API
 - Execute swaps with slippage protection
 - Display quote details and routing information
 
 ## Prerequisites
 
-- **Deflex API Key** - Request an API key by emailing [support@txnlab.dev](mailto:support@txnlab.dev)
+- **Haystack Router API Key** - Request an API key by emailing [support@txnlab.dev](mailto:support@txnlab.dev)
 - Node.js >= 20
 - pnpm 10.20.0 or later
 
@@ -30,10 +30,10 @@ pnpm install
 cp .env.example .env
 ```
 
-3. Add your Deflex API key to the `.env` file:
+3. Add your Haystack Router API key to the `.env` file:
 
 ```
-VITE_DEFLEX_API_KEY=your-api-key-here
+VITE_HAYSTACK_ROUTER_API_KEY=your-api-key-here
 ```
 
 ## Development
@@ -67,7 +67,7 @@ pnpm preview
 3. If you have multiple accounts, select the active account from the dropdown
 4. Select the assets you want to swap
 5. Enter the amount and slippage tolerance
-6. Click "Get Quote" to fetch a quote from Deflex
+6. Click "Get Quote" to fetch a quote from Haystack Router
 7. Review the quote details (output amount, price impact, routing)
 8. Click "Execute Swap" to perform the swap
 

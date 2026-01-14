@@ -1,6 +1,6 @@
 import algosdk from 'algosdk'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { DeflexClient } from '../src/client'
+import { RouterClient } from '../src/client'
 import { Protocol } from '../src/constants'
 import type { FetchQuoteResponse, FetchSwapTxnsResponse } from '../src/types'
 
@@ -19,19 +19,19 @@ vi.mock('../src/utils', () => ({
   },
 }))
 
-describe('DeflexClient', () => {
+describe('RouterClient', () => {
   const validConfig = {
     apiKey: 'test-api-key',
   }
 
   describe('constructor', () => {
     it('should create a client with valid configuration', () => {
-      const client = new DeflexClient(validConfig)
-      expect(client).toBeInstanceOf(DeflexClient)
+      const client = new RouterClient(validConfig)
+      expect(client).toBeInstanceOf(RouterClient)
     })
 
     it('should throw error when apiKey is missing', () => {
-      expect(() => new DeflexClient({ apiKey: '' })).toThrow(
+      expect(() => new RouterClient({ apiKey: '' })).toThrow(
         'API key is required',
       )
     })
@@ -39,7 +39,7 @@ describe('DeflexClient', () => {
     it('should validate referrer address when provided', () => {
       expect(
         () =>
-          new DeflexClient({
+          new RouterClient({
             ...validConfig,
             referrerAddress: 'invalid-address',
           }),
@@ -49,63 +49,63 @@ describe('DeflexClient', () => {
     it('should accept valid referrer address', () => {
       const validAddress =
         '5BPCE3UNCPAIONAOMY4CVUXNU27SOCXYE4QSXEQFYXV6ORFQIKVTOR6ZTM'
-      const client = new DeflexClient({
+      const client = new RouterClient({
         ...validConfig,
         referrerAddress: validAddress,
       })
-      expect(client).toBeInstanceOf(DeflexClient)
+      expect(client).toBeInstanceOf(RouterClient)
     })
 
     it('should validate feeBps is within range', () => {
-      expect(() => new DeflexClient({ ...validConfig, feeBps: -1 })).toThrow(
+      expect(() => new RouterClient({ ...validConfig, feeBps: -1 })).toThrow(
         'Invalid fee',
       )
 
-      expect(() => new DeflexClient({ ...validConfig, feeBps: 301 })).toThrow(
+      expect(() => new RouterClient({ ...validConfig, feeBps: 301 })).toThrow(
         'Invalid fee',
       )
     })
 
     it('should accept valid feeBps values', () => {
-      const client1 = new DeflexClient({ ...validConfig, feeBps: 0 })
-      const client2 = new DeflexClient({ ...validConfig, feeBps: 15 })
-      const client3 = new DeflexClient({ ...validConfig, feeBps: 300 })
+      const client1 = new RouterClient({ ...validConfig, feeBps: 0 })
+      const client2 = new RouterClient({ ...validConfig, feeBps: 15 })
+      const client3 = new RouterClient({ ...validConfig, feeBps: 300 })
 
-      expect(client1).toBeInstanceOf(DeflexClient)
-      expect(client2).toBeInstanceOf(DeflexClient)
-      expect(client3).toBeInstanceOf(DeflexClient)
+      expect(client1).toBeInstanceOf(RouterClient)
+      expect(client2).toBeInstanceOf(RouterClient)
+      expect(client3).toBeInstanceOf(RouterClient)
     })
 
     it('should use default configuration values', () => {
-      const client = new DeflexClient(validConfig)
-      expect(client).toBeInstanceOf(DeflexClient)
+      const client = new RouterClient(validConfig)
+      expect(client).toBeInstanceOf(RouterClient)
     })
 
     it('should accept custom algod configuration', () => {
-      const client = new DeflexClient({
+      const client = new RouterClient({
         ...validConfig,
         algodUri: 'https://custom-node.com',
         algodToken: 'custom-token',
         algodPort: 8080,
       })
-      expect(client).toBeInstanceOf(DeflexClient)
+      expect(client).toBeInstanceOf(RouterClient)
     })
 
     it('should accept custom apiBaseUrl configuration', () => {
-      const client = new DeflexClient({
+      const client = new RouterClient({
         ...validConfig,
         apiBaseUrl: 'https://custom-api.example.com',
       })
-      expect(client).toBeInstanceOf(DeflexClient)
+      expect(client).toBeInstanceOf(RouterClient)
     })
   })
 
   describe('fetchQuote', () => {
-    let client: DeflexClient
+    let client: RouterClient
     let mockRequest: ReturnType<typeof vi.fn>
 
     beforeEach(async () => {
-      client = new DeflexClient(validConfig)
+      client = new RouterClient(validConfig)
       const requestModule = vi.mocked(await import('../src/utils'), {
         partial: true,
       })
@@ -195,7 +195,7 @@ describe('DeflexClient', () => {
     })
 
     it('should use custom apiBaseUrl when provided', async () => {
-      const customClient = new DeflexClient({
+      const customClient = new RouterClient({
         ...validConfig,
         apiBaseUrl: 'https://custom-api.example.com',
       })
@@ -222,7 +222,7 @@ describe('DeflexClient', () => {
     })
 
     it('should check for asset opt-in when autoOptIn is enabled and address provided', async () => {
-      const clientWithAutoOptIn = new DeflexClient({
+      const clientWithAutoOptIn = new RouterClient({
         ...validConfig,
         autoOptIn: true,
       })
@@ -359,7 +359,7 @@ describe('DeflexClient', () => {
       })
 
       it('should include optIn=true when autoOptIn is enabled and asset opt-in is needed', async () => {
-        const clientWithAutoOptIn = new DeflexClient({
+        const clientWithAutoOptIn = new RouterClient({
           ...validConfig,
           autoOptIn: true,
         })
@@ -403,7 +403,7 @@ describe('DeflexClient', () => {
       })
 
       it('should include optIn=false when autoOptIn is enabled and asset is already opted in', async () => {
-        const clientWithAutoOptIn = new DeflexClient({
+        const clientWithAutoOptIn = new RouterClient({
           ...validConfig,
           autoOptIn: true,
         })
@@ -447,7 +447,7 @@ describe('DeflexClient', () => {
       })
 
       it('should NOT include optIn param when autoOptIn is enabled but no address provided', async () => {
-        const clientWithAutoOptIn = new DeflexClient({
+        const clientWithAutoOptIn = new RouterClient({
           ...validConfig,
           autoOptIn: true,
         })
@@ -475,7 +475,7 @@ describe('DeflexClient', () => {
       })
 
       it('should use explicit optIn value even when autoOptIn is enabled', async () => {
-        const clientWithAutoOptIn = new DeflexClient({
+        const clientWithAutoOptIn = new RouterClient({
           ...validConfig,
           autoOptIn: true,
         })
@@ -584,7 +584,7 @@ describe('DeflexClient', () => {
       })
 
       it('should throw error when _allowNonComposableSwaps is used with autoOptIn enabled', async () => {
-        const clientWithAutoOptIn = new DeflexClient({
+        const clientWithAutoOptIn = new RouterClient({
           ...validConfig,
           autoOptIn: true,
         })
@@ -652,10 +652,10 @@ describe('DeflexClient', () => {
   })
 
   describe('needsAssetOptIn', () => {
-    let client: DeflexClient
+    let client: RouterClient
 
     beforeEach(() => {
-      client = new DeflexClient(validConfig)
+      client = new RouterClient(validConfig)
     })
 
     it('should return false for ALGO (asset ID 0)', async () => {
@@ -720,11 +720,11 @@ describe('DeflexClient', () => {
   })
 
   describe('fetchSwapTransactions', () => {
-    let client: DeflexClient
+    let client: RouterClient
     let mockRequest: ReturnType<typeof vi.fn>
 
     beforeEach(async () => {
-      client = new DeflexClient(validConfig)
+      client = new RouterClient(validConfig)
       const requestModule = vi.mocked(await import('../src/utils'), {
         partial: true,
       })
@@ -794,11 +794,11 @@ describe('DeflexClient', () => {
   })
 
   describe('newQuote', () => {
-    let client: DeflexClient
+    let client: RouterClient
     let mockRequest: ReturnType<typeof vi.fn>
 
     beforeEach(async () => {
-      client = new DeflexClient(validConfig)
+      client = new RouterClient(validConfig)
       const requestModule = vi.mocked(await import('../src/utils'), {
         partial: true,
       })
@@ -922,11 +922,11 @@ describe('DeflexClient', () => {
   })
 
   describe('newSwap', () => {
-    let client: DeflexClient
+    let client: RouterClient
     let mockRequest: ReturnType<typeof vi.fn>
 
     beforeEach(async () => {
-      client = new DeflexClient(validConfig)
+      client = new RouterClient(validConfig)
       const requestModule = vi.mocked(await import('../src/utils'), {
         partial: true,
       })

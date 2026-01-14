@@ -41,9 +41,9 @@ importers:
 
   examples/node-cli:
     dependencies:
-      '@txnlab/deflex':
+      '@txnlab/haystack-router':
         specifier: workspace:*
-        version: link:../../packages/deflex
+        version: link:../../packages/haystack
       algosdk:
         specifier: ^3.5.2
         version: 3.5.2
@@ -66,9 +66,9 @@ importers:
       '@perawallet/connect':
         specifier: ^1.4.2
         version: 1.4.2(algosdk@3.5.2)
-      '@txnlab/deflex':
+      '@txnlab/haystack-router':
         specifier: workspace:*
-        version: link:../../packages/deflex
+        version: link:../../packages/haystack
       '@txnlab/use-wallet-react':
         specifier: ^4.3.1
         version: 4.3.1(@blockshake/defly-connect@1.2.1(algosdk@3.5.2))(@perawallet/connect@1.4.2(algosdk@3.5.2))(algosdk@3.5.2)(lute-connect@1.6.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -115,9 +115,9 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.62.14
         version: 5.90.5(react@18.3.1)
-      '@txnlab/deflex':
+      '@txnlab/haystack-router':
         specifier: workspace:*
-        version: link:../../packages/deflex
+        version: link:../../packages/haystack
       '@txnlab/use-wallet-react':
         specifier: ^4.3.1
         version: 4.3.1(@blockshake/defly-connect@1.2.1(algosdk@3.5.2))(@perawallet/connect@1.4.2(algosdk@3.5.2))(algosdk@3.5.2)(lute-connect@1.6.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -153,7 +153,7 @@ importers:
         specifier: ^0.24.0
         version: 0.24.0(rollup@4.52.5)(vite@6.4.1(@types/node@24.9.1)(jiti@2.6.1))
 
-  packages/deflex:
+  packages/haystack:
     devDependencies:
       '@types/node':
         specifier: 22.19.5

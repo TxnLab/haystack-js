@@ -1,13 +1,14 @@
 {
-  "name": "@txnlab/deflex",
-  "version": "1.8.0",
-  "description": "TypeScript/JavaScript SDK for Deflex Order Router - smart order routing and DEX aggregation on Algorand",
+  "name": "@txnlab/haystack-router",
+  "version": "2.0.0",
+  "description": "TypeScript/JavaScript SDK for Haystack Order Router - smart order routing and DEX aggregation on Algorand",
   "keywords": [
     "algorand",
-    "deflex",
+    "haystack",
+    "router",
+    "order-router",
     "dex",
     "swap",
-    "order-router",
     "defi",
     "amm",
     "liquidity",
@@ -17,14 +18,14 @@
     "typescript",
     "sdk"
   ],
-  "homepage": "https://github.com/TxnLab/deflex-js",
+  "homepage": "https://github.com/TxnLab/haystack-js",
   "bugs": {
-    "url": "https://github.com/TxnLab/deflex-js/issues"
+    "url": "https://github.com/TxnLab/haystack-js/issues"
   },
   "author": "Doug Richar <doug@txnlab.dev> (https://txnlab.dev)",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/TxnLab/deflex-js.git"
+    "url": "git+https://github.com/TxnLab/haystack-js.git"
   },
   "license": "MIT",
   "files": [

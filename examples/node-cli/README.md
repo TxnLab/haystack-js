@@ -1,6 +1,6 @@
-# Deflex SDK - Node.js CLI Example
+# Haystack Router SDK - Node.js CLI Example
 
-This example demonstrates how to use the Deflex SDK in a Node.js command-line application with a custom transaction signer.
+This example demonstrates how to use the Haystack Router SDK in a Node.js command-line application with a custom transaction signer.
 
 ## Features
 
@@ -12,7 +12,7 @@ This example demonstrates how to use the Deflex SDK in a Node.js command-line ap
 
 ## Prerequisites
 
-- **Deflex API Key** - Request an API key by emailing [support@txnlab.dev](mailto:support@txnlab.dev)
+- **Haystack Router API Key** - Request an API key by emailing [support@txnlab.dev](mailto:support@txnlab.dev)
 - algosdk 3.0.0 or later (peer dependency)
 - Node.js >= 20
 - pnpm 10.20.0 or later
@@ -34,8 +34,8 @@ cp .env.example .env
 3. Configure your `.env` file:
 
 ```env
-# Required: Your Deflex API key
-DEFLEX_API_KEY=your-api-key-here
+# Required: Your Haystack Router API key
+HAYSTACK_ROUTER_API_KEY=your-api-key-here
 
 # Required: Your 25-word account mnemonic
 # WARNING: Keep this file private and never commit it!
@@ -76,7 +76,7 @@ pnpm dev
 The CLI will:
 1. Load configuration from `.env`
 2. Display swap parameters
-3. Fetch a quote from Deflex API
+3. Fetch a quote from Haystack Router API
 4. Show quote details (output amount, price impact, routing)
 5. Execute the swap
 6. Display transaction IDs and confirmation
@@ -84,7 +84,7 @@ The CLI will:
 ### Example Output
 
 ```
-🚀 Deflex CLI Swap Tool
+🚀 Haystack Router CLI Swap Tool
 
 📋 Configuration:
    From Asset: 0

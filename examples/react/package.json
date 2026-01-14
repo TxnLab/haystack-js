@@ -1,5 +1,5 @@
 {
-  "name": "deflex-example-react-vite",
+  "name": "haystack-router-example-react-vite",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,7 +10,7 @@
   "dependencies": {
     "@blockshake/defly-connect": "^1.2.1",
     "@perawallet/connect": "^1.4.2",
-    "@txnlab/deflex": "workspace:*",
+    "@txnlab/haystack-router": "workspace:*",
     "@txnlab/use-wallet-react": "^4.3.1",
     "algosdk": "^3.5.2",
     "lute-connect": "^1.6.3",

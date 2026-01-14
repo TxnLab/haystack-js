@@ -64,7 +64,7 @@ describe('constants', () => {
 
   describe('API configuration defaults', () => {
     it('should have correct default API base URL', () => {
-      expect(DEFAULT_API_BASE_URL).toBe('https://deflex.txnlab.dev/api')
+      expect(DEFAULT_API_BASE_URL).toBe('https://hayrouter.txnlab.dev/api')
     })
   })
 

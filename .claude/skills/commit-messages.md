@@ -24,7 +24,7 @@ Note: The commit history contains Renovate bot commits that use uppercase (e.g.,
 
 ## Common Scopes
 
-- `client` - DeflexClient class changes
+- `client` - RouterClient class changes
 - `composer` - SwapComposer class changes
 - `middleware` - Middleware system changes
 - `types` - Type definitions

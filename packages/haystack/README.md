@@ -1,41 +1,41 @@
-# Deflex SDK
+# Haystack Router SDK
 
-[![npm version](https://img.shields.io/npm/v/@txnlab/deflex.svg)](https://www.npmjs.com/package/@txnlab/deflex)
-[![bundle size](https://deno.bundlejs.com/badge?q=@txnlab/deflex@latest&treeshake=[*])](https://bundlejs.com/?q=%40txnlab%2Fdeflex%40latest&treeshake=%5B*%5D)
-[![CI](https://github.com/TxnLab/deflex-js/actions/workflows/ci.yml/badge.svg)](https://github.com/TxnLab/deflex-js/actions/workflows/ci.yml)
+[![npm version](https://img.shields.io/npm/v/@txnlab/haystack-router.svg)](https://www.npmjs.com/package/@txnlab/haystack-router)
+[![bundle size](https://deno.bundlejs.com/badge?q=@txnlab/haystack-router@latest&treeshake=[*])](https://bundlejs.com/?q=%40txnlab%2Fdeflex%40latest&treeshake=%5B*%5D)
+[![CI](https://github.com/TxnLab/haystack-js/actions/workflows/ci.yml/badge.svg)](https://github.com/TxnLab/haystack-js/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
 
-TypeScript/JavaScript SDK for [Deflex Order Router](https://txnlab.gitbook.io/deflex-api) - smart order routing and DEX aggregation on Algorand.
+TypeScript/JavaScript SDK for [Haystack Order Router](https://txnlab.gitbook.io/haystack-router-api) - smart order routing and DEX aggregation on Algorand.
 
 ## Prerequisites
 
-- **Deflex API Key** - Request an API key by emailing [support@txnlab.dev](mailto:support@txnlab.dev)
+- **Haystack Router API Key** - Request an API key by emailing [support@txnlab.dev](mailto:support@txnlab.dev)
 - algosdk 3.0.0 or later
 
 ## Installation
 
 ```bash
-npm install @txnlab/deflex algosdk
+npm install @txnlab/haystack-router algosdk
 ```
 
-> **Note**: `algosdk` is a peer dependency and must be installed alongside `@txnlab/deflex`.
+> **Note**: `algosdk` is a peer dependency and must be installed alongside `@txnlab/haystack-router`.
 
 ## Quick Start
 
 ```typescript
-import { DeflexClient } from '@txnlab/deflex'
+import { RouterClient } from '@txnlab/haystack-router'
 import { useWallet } from '@txnlab/use-wallet-*' // react, vue, solid, or svelte
 
 const { activeAddress, transactionSigner } = useWallet()
 
 // Initialize the client
-const deflex = new DeflexClient({
+const router = new RouterClient({
   apiKey: 'your-api-key',
 })
 
 // Get a quote
-const quote = await deflex.newQuote({
+const quote = await router.newQuote({
   address: activeAddress,
   fromAssetId: 0, // ALGO
   toAssetId: 31566704, // USDC
@@ -43,7 +43,7 @@ const quote = await deflex.newQuote({
 })
 
 // Execute the swap
-const swap = await deflex.newSwap({
+const swap = await router.newSwap({
   quote,
   address: activeAddress,
   signer: transactionSigner,
@@ -59,15 +59,15 @@ console.log(`Swap completed in round ${result.confirmedRound}`)
 ### Initialize the Client
 
 ```typescript
-import { DeflexClient } from '@txnlab/deflex'
+import { RouterClient } from '@txnlab/haystack-router'
 
 // Basic initialization
-const deflex = new DeflexClient({
+const router = new RouterClient({
   apiKey: 'your-api-key',
 })
 
 // Custom Algod configuration
-const deflex = new DeflexClient({
+const router = new RouterClient({
   apiKey: 'your-api-key',
   algodUri: 'https://mainnet-api.4160.nodely.dev/',
   algodToken: '',
@@ -76,22 +76,22 @@ const deflex = new DeflexClient({
 })
 
 // Earn fees with the referral program
-const deflex = new DeflexClient({
+const router = new RouterClient({
   apiKey: 'your-api-key',
   referrerAddress: 'YOUR_ALGORAND_ADDRESS', // Earns 25% of swap fees
   feeBps: 15, // 0.15% fee (max: 300 = 3%)
 })
 ```
 
-By providing your Algorand address as the `referrerAddress` when initializing the client, you can earn 25% of the swap fees generated through your integration. Set the `feeBps` parameter to specify the total fee charged to users (default: 0.15%, max: 3.00%). Learn more about the [Deflex Referral Program](https://txnlab.gitbook.io/deflex-api/referral-treasury/referral-program).
+By providing your Algorand address as the `referrerAddress` when initializing the client, you can earn 25% of the swap fees generated through your integration. Set the `feeBps` parameter to specify the total fee charged to users (default: 0.15%, max: 3.00%). Learn more about the [Haystack Router Referral Program](https://txnlab.gitbook.io/haystack-router-api/referral-treasury/referral-program).
 
 ### Get a Swap Quote
 
-The [`newQuote()`](#deflexclientnewquote) method returns a [`DeflexQuote`](#deflexquote) object:
+The [`newQuote()`](#deflexclientnewquote) method returns a [`SwapQuote`](#deflexquote) object:
 
 ```typescript
 // Basic quote
-const quote = await deflex.newQuote({
+const quote = await router.newQuote({
   fromASAID: 0, // ALGO
   toASAID: 31566704, // USDC
   amount: 1_000_000, // 1 ALGO
@@ -108,7 +108,7 @@ import { useWallet } from '@txnlab/use-wallet-*' // react, vue, solid, or svelte
 
 const { activeAddress, transactionSigner } = useWallet()
 
-const swap = await deflex.newSwap({
+const swap = await router.newSwap({
   quote,
   address: activeAddress,
   signer: transactionSigner,
@@ -125,7 +125,7 @@ console.log('Transaction IDs:', result.txIds)
 Add a custom note to the input transaction for tracking purposes, and retrieve its transaction ID after execution:
 
 ```typescript
-const swap = await deflex.newSwap({
+const swap = await router.newSwap({
   quote,
   address: activeAddress,
   signer: transactionSigner,
@@ -155,7 +155,7 @@ import { useWallet } from '@txnlab/use-wallet-*' // react, vue, solid, or svelte
 
 const { activeAddress, transactionSigner } = useWallet()
 
-const swap = await deflex.newSwap({
+const swap = await router.newSwap({
   quote,
   address: activeAddress,
   signer: transactionSigner,
@@ -192,7 +192,7 @@ const customSigner = async (
   return signedTxns
 }
 
-const swap = await deflex.newSwap({
+const swap = await router.newSwap({
   quote,
   address: activeAddress,
   signer: customSigner,
@@ -231,7 +231,7 @@ const methodCall = {
 }
 
 // Build and execute the transaction group
-const swap = await deflex.newSwap({
+const swap = await router.newSwap({
   quote,
   address: activeAddress,
   signer: transactionSigner,
@@ -247,7 +247,7 @@ const result = await swap
 
 ### Middleware for Custom Asset Requirements
 
-Some Algorand assets require additional transactions to be added to swap groups (e.g., assets with transfer restrictions, taxes, or custom smart contract logic). The Deflex SDK supports a middleware system that allows these special requirements to be handled by external packages without modifying the core SDK.
+Some Algorand assets require additional transactions to be added to swap groups (e.g., assets with transfer restrictions, taxes, or custom smart contract logic). The Haystack Router SDK supports a middleware system that allows these special requirements to be handled by external packages without modifying the core SDK.
 
 Middleware can:
 - Adjust quote parameters (e.g., reduce `maxGroupSize` to account for extra transactions)
@@ -255,7 +255,7 @@ Middleware can:
 - Add transactions after the swap (e.g., tax payments, cleanup calls)
 
 ```typescript
-import { DeflexClient } from '@txnlab/deflex'
+import { RouterClient } from '@txnlab/haystack-router'
 import { FirstStageMiddleware } from '@firststage/deflex-middleware' // Example external package
 
 // Initialize middleware
@@ -263,21 +263,21 @@ const firstStage = new FirstStageMiddleware({
   contractAppId: 123456,
 })
 
-// Pass middleware to DeflexClient
-const deflex = new DeflexClient({
+// Pass middleware to RouterClient
+const router = new RouterClient({
   apiKey: 'your-api-key',
   middleware: [firstStage], // Middleware is applied automatically
 })
 
 // Use normally - middleware handles everything
-const quote = await deflex.newQuote({
+const quote = await router.newQuote({
   fromASAID: 0,        // ALGO
   toASAID: 789012,     // Custom asset (e.g., MOOJ, DEAL)
   amount: 1_000_000,
   address: userAddress,
 })
 
-const swap = await deflex.newSwap({ quote, address, signer, slippage: 1 })
+const swap = await router.newSwap({ quote, address, signer, slippage: 1 })
 await swap.execute() // Middleware transactions are automatically included
 ```
 
@@ -286,19 +286,19 @@ await swap.execute() // Middleware transactions are automatically included
 The SDK includes `AutoOptOutMiddleware`, which automatically opts out of assets when swapping your full balance, cleaning up zero balance assets and reducing minimum balance requirements:
 
 ```typescript
-import { DeflexClient, AutoOptOutMiddleware } from '@txnlab/deflex'
+import { RouterClient, AutoOptOutMiddleware } from '@txnlab/haystack-router'
 
 const autoOptOut = new AutoOptOutMiddleware({
   excludedAssets: [31566704], // Optional: exclude specific assets like USDC
 })
 
-const deflex = new DeflexClient({
+const router = new RouterClient({
   apiKey: 'your-api-key',
   middleware: [autoOptOut],
 })
 
 // When swapping full balance, opt-out transaction is automatically added
-const quote = await deflex.newQuote({
+const quote = await router.newQuote({
   fromASAID: someAssetId,
   toASAID: 0,
   amount: fullBalance, // If this matches your full balance, asset will be opted out
@@ -313,16 +313,16 @@ For details on creating your own middleware, see [MIDDLEWARE.md](MIDDLEWARE.md).
 If you're not using `autoOptIn: true`, you can manually check if opt-in is needed:
 
 ```typescript
-const deflex = new DeflexClient({
+const router = new RouterClient({
   apiKey: 'your-api-key',
   autoOptIn: false, // Default if not provided
 })
 
 // Check if user needs to opt into the output asset
-const needsOptIn = await deflex.needsAssetOptIn(userAddress, toAssetId)
+const needsOptIn = await router.needsAssetOptIn(userAddress, toAssetId)
 
 // Include opt-in in quote if needed
-const quote = await deflex.newQuote({
+const quote = await router.newQuote({
   fromAssetId,
   toAssetId,
   amount,
@@ -338,14 +338,14 @@ import { useWallet } from '@txnlab/use-wallet-*' // react, vue, solid, or svelte
 const { activeAddress, transactionSigner } = useWallet()
 
 try {
-  const quote = await deflex.newQuote({
+  const quote = await router.newQuote({
     fromAssetId: 0,
     toAssetId: 31566704,
     amount: 1_000_000,
     address: activeAddress,
   })
 
-  const swap = await deflex.newSwap({
+  const swap = await router.newSwap({
     quote,
     address: activeAddress,
     signer: transactionSigner,
@@ -361,18 +361,18 @@ try {
 
 ## API Reference
 
-### DeflexClient
+### RouterClient
 
-The main client for interacting with the Deflex API.
+The main client for interacting with the Haystack Router API.
 
 ```typescript
-new DeflexClient(config: DeflexConfigParams)
+new RouterClient(config: ConfigParams)
 ```
 
 | Option            | Description                                                  | Type                  | Default                                |
 | ----------------- | ------------------------------------------------------------ | --------------------- | -------------------------------------- |
-| `apiKey`          | Your Deflex API key                                          | `string`              | **required**                           |
-| `apiBaseUrl`      | Base URL for the Deflex API                                  | `string`              | `https://deflex.txnlab.dev`            |
+| `apiKey`          | Your Haystack Router API key                                          | `string`              | **required**                           |
+| `apiBaseUrl`      | Base URL for the Haystack Router API                                  | `string`              | `https://hayrouter.txnlab.dev`            |
 | `algodUri`        | Algod node URI                                               | `string`              | `https://mainnet-api.4160.nodely.dev/` |
 | `algodToken`      | Algod node token                                             | `string`              | `''`                                   |
 | `algodPort`       | Algod node port                                              | `string \| number`    | `443`                                  |
@@ -381,14 +381,14 @@ new DeflexClient(config: DeflexConfigParams)
 | `autoOptIn`       | Auto-detect and add required opt-in transactions             | `boolean`             | `false`                                |
 | `middleware`      | Array of middleware for custom asset requirements            | `SwapMiddleware[]`    | `[]`                                   |
 
-> **Referral Program**: By providing a `referrerAddress`, you can earn 25% of the swap fees generated through your integration. The `feeBps` parameter sets the total fee charged (default: 0.15%). Learn more about the [Deflex Referral Program](https://txnlab.gitbook.io/deflex-api/referral-treasury/referral-program).
+> **Referral Program**: By providing a `referrerAddress`, you can earn 25% of the swap fees generated through your integration. The `feeBps` parameter sets the total fee charged (default: 0.15%). Learn more about the [Haystack Router Referral Program](https://txnlab.gitbook.io/haystack-router-api/referral-treasury/referral-program).
 
-#### DeflexClient.newQuote()
+#### RouterClient.newQuote()
 
-Fetch a swap quote and return a [`DeflexQuote`](#deflexquote) object.
+Fetch a swap quote and return a [`SwapQuote`](#deflexquote) object.
 
 ```typescript
-async newQuote(params: FetchQuoteParams): Promise<DeflexQuote>
+async newQuote(params: FetchQuoteParams): Promise<SwapQuote>
 ```
 
 | Parameter           | Description                                | Type                              | Default         |
@@ -403,7 +403,7 @@ async newQuote(params: FetchQuoteParams): Promise<DeflexQuote>
 | `maxDepth`          | Maximum swap hops                          | `number`                          | `4`             |
 | `optIn`             | Override auto opt-in behavior              | `boolean`                         | `undefined`     |
 
-#### DeflexClient.newSwap()
+#### RouterClient.newSwap()
 
 Returns a [`SwapComposer`](#swapcomposer) instance for building and executing swaps.
 
@@ -413,13 +413,13 @@ async newSwap(config: SwapComposerConfig): Promise<SwapComposer>
 
 | Parameter  | Description                                       | Type                                                                                                                   |
 | ---------- | ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `quote`    | Quote result or raw API response                  | `DeflexQuote \| FetchQuoteResponse`                                                                                    |
+| `quote`    | Quote result or raw API response                  | `SwapQuote \| FetchQuoteResponse`                                                                                    |
 | `address`  | Signer address                                    | `string`                                                                                                               |
 | `slippage` | Slippage tolerance as percentage (e.g., 1 for 1%) | `number`                                                                                                               |
 | `signer`   | Transaction signer function                       | `algosdk.TransactionSigner \| ((txnGroup: Transaction[], indexesToSign: number[]) => Promise<(Uint8Array \| null)[]>)` |
 | `note`     | Optional note for the user-signed input transaction (for tracking purposes) | `Uint8Array`                                                                                             |
 
-#### DeflexClient.needsAssetOptIn()
+#### RouterClient.needsAssetOptIn()
 
 Checks if an address needs to opt into an asset.
 
@@ -432,7 +432,7 @@ async needsAssetOptIn(address: string, assetId: bigint | number): Promise<boolea
 | `address` | Algorand address to check | `string`           |
 | `assetId` | Asset ID to check         | `bigint \| number` |
 
-### DeflexQuote
+### SwapQuote
 
 Plain object returned by [`newQuote()`](#deflexclientnewquote). Extends the raw API response with additional metadata.
 
@@ -485,7 +485,7 @@ Builder for constructing and executing atomic swap transaction groups, returned 
 
 ## Documentation
 
-For more information about the Deflex Order Router protocol, visit the [official documentation](https://txnlab.gitbook.io/deflex-api).
+For more information about the Haystack Order Router protocol, visit the [official documentation](https://txnlab.gitbook.io/haystack-router-api).
 
 ## License
 
@@ -493,6 +493,6 @@ MIT
 
 ## Support
 
-- [GitHub Issues](https://github.com/TxnLab/deflex-js/issues)
+- [GitHub Issues](https://github.com/TxnLab/haystack-js/issues)
 - [Discord](https://discord.gg/Ek3dNyzG)
 - [TxnLab](https://txnlab.dev)

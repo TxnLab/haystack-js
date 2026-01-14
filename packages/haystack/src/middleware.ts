@@ -5,7 +5,7 @@ import {
   type TransactionSigner,
   type TransactionWithSigner,
 } from 'algosdk'
-import type { DeflexQuote, FetchQuoteParams, QuoteType } from './types'
+import type { SwapQuote, FetchQuoteParams, QuoteType } from './types'
 
 /**
  * Context provided to middleware shouldApply hook
@@ -30,7 +30,7 @@ export interface QuoteContext {
  */
 export interface SwapContext {
   /** The quote result from newQuote() */
-  readonly quote: DeflexQuote
+  readonly quote: SwapQuote
   /** The address of the account performing the swap */
   readonly address: string
   /** Algodv2 client instance for making additional queries/transactions */
@@ -110,7 +110,7 @@ export interface SwapMiddleware {
    * Modify quote parameters before fetching the quote
    *
    * **IMPORTANT**: If your middleware adds transactions via `beforeSwap` or `afterSwap`,
-   * you MUST reduce `maxGroupSize` accordingly to prevent failures. The Deflex API may
+   * you MUST reduce `maxGroupSize` accordingly to prevent failures. The Haystack Router API may
    * return routes that use all 16 available transaction slots.
    *
    * Use this to adjust the quote request based on your asset's requirements.
@@ -248,19 +248,19 @@ export interface AutoOptOutConfig {
  *
  * @example
  * ```typescript
- * import { DeflexClient, AutoOptOutMiddleware } from '@txnlab/deflex'
+ * import { RouterClient, AutoOptOutMiddleware } from '@txnlab/haystack-router'
  *
  * const autoOptOut = new AutoOptOutMiddleware({
  *   excludedAssets: [31566704], // Don't auto-opt-out of USDC
  * })
  *
- * const deflex = new DeflexClient({
+ * const router = new RouterClient({
  *   apiKey: 'your-api-key',
  *   middleware: [autoOptOut],
  * })
  *
  * // When swapping full balance, opt-out transaction is automatically added
- * const quote = await deflex.newQuote({
+ * const quote = await router.newQuote({
  *   address: userAddress,
  *   fromASAID: someAssetId,
  *   toASAID: 0,

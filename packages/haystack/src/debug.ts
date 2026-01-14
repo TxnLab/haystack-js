@@ -4,13 +4,13 @@
  */
 
 import { Logger } from './logger'
-import type { DeflexQuote, FetchQuoteResponse } from './types'
+import type { SwapQuote, FetchQuoteResponse } from './types'
 
 /**
  * Context for swap execution debugging
  */
 export interface SwapExecutionContext {
-  quote: DeflexQuote | FetchQuoteResponse
+  quote: SwapQuote | FetchQuoteResponse
   address: string
   slippage: number
   transactionCount: number

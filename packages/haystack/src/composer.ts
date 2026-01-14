@@ -18,9 +18,9 @@ import { Logger } from './logger'
 import type { SwapMiddleware, SwapContext, QuoteContext } from './middleware'
 import type {
   FetchQuoteResponse,
-  DeflexTransaction,
-  DeflexSignature,
-  DeflexQuote,
+  SwapTransaction,
+  Signature,
+  SwapQuote,
   MethodCall,
   QuoteType,
   SwapSummary,
@@ -64,9 +64,9 @@ export enum SwapComposerStatus {
  */
 export interface SwapComposerConfig {
   /** The quote response from fetchQuote() or newQuote() */
-  readonly quote: FetchQuoteResponse | DeflexQuote
+  readonly quote: FetchQuoteResponse | SwapQuote
   /** The swap transactions from fetchSwapTransactions() */
-  readonly deflexTxns: DeflexTransaction[]
+  readonly swapTxns: SwapTransaction[]
   /** Algodv2 client instance */
   readonly algodClient: Algodv2
   /** The address of the account that will sign transactions */
@@ -77,7 +77,7 @@ export interface SwapComposerConfig {
   readonly middleware?: SwapMiddleware[]
   /** Optional note field for the user-signed input transaction (payment or asset transfer) */
   readonly note?: Uint8Array
-  /** Debug logging level (propagated from DeflexClient) */
+  /** Debug logging level (propagated from RouterClient) */
   readonly debugLevel?: 'none' | 'info' | 'debug' | 'trace'
 }
 
@@ -90,8 +90,8 @@ export interface SwapComposerConfig {
  *
  * @example
  * ```typescript
- * const quote = await deflex.fetchQuote({ ... })
- * const composer = await deflex.newSwap({ quote, address, slippage, signer })
+ * const quote = await router.fetchQuote({ ... })
+ * const composer = await router.newSwap({ quote, address, slippage, signer })
  *
  * await composer
  *   .addTransaction(customTxn)
@@ -109,9 +109,9 @@ export class SwapComposer {
   /** Whether the swap transactions have been added to the atomic group. */
   private swapTransactionsAdded = false
 
-  private readonly quote: FetchQuoteResponse | DeflexQuote
+  private readonly quote: FetchQuoteResponse | SwapQuote
   private readonly requiredAppOptIns: number[]
-  private readonly deflexTxns: DeflexTransaction[]
+  private readonly swapTxns: SwapTransaction[]
   private readonly algodClient: Algodv2
   private readonly address: string
   private readonly signer: TransactionSigner | SignerFunction
@@ -135,12 +135,12 @@ export class SwapComposer {
   /**
    * Create a new SwapComposer instance
    *
-   * Note: Most developers should use DeflexClient.newSwap() instead of constructing
+   * Note: Most developers should use RouterClient.newSwap() instead of constructing
    * this directly, as the factory method handles fetching swap transactions automatically.
    *
    * @param config - Configuration for the composer
    * @param config.quote - The quote response from fetchQuote()
-   * @param config.deflexTxns - The swap transactions from fetchSwapTransactions()
+   * @param config.swapTxns - The swap transactions from fetchSwapTransactions()
    * @param config.algodClient - Algodv2 client instance
    * @param config.address - The address of the account that will sign transactions
    * @param config.signer - Transaction signer function
@@ -156,10 +156,10 @@ export class SwapComposer {
     if (!config.quote) {
       throw new Error('Quote is required')
     }
-    if (!config.deflexTxns) {
+    if (!config.swapTxns) {
       throw new Error('Swap transactions are required')
     }
-    if (config.deflexTxns.length === 0) {
+    if (config.swapTxns.length === 0) {
       throw new Error('Swap transactions array cannot be empty')
     }
     if (!config.algodClient) {
@@ -171,7 +171,7 @@ export class SwapComposer {
 
     this.quote = config.quote
     this.requiredAppOptIns = config.quote.requiredAppOptIns
-    this.deflexTxns = config.deflexTxns
+    this.swapTxns = config.swapTxns
     this.algodClient = config.algodClient
     this.address = this.validateAddress(config.address)
     this.signer = config.signer
@@ -366,7 +366,7 @@ export class SwapComposer {
    *
    * @example
    * ```typescript
-   * const composer = await deflex.newSwap({ quote, address, slippage, signer })
+   * const composer = await router.newSwap({ quote, address, slippage, signer })
    * composer.addTransaction(customTxn)
    *
    * // Build the group to inspect transactions before signing
@@ -516,7 +516,7 @@ export class SwapComposer {
    *
    * @example
    * ```typescript
-   * const swap = await deflex.newSwap({
+   * const swap = await router.newSwap({
    *   quote,
    *   address,
    *   slippage,
@@ -554,7 +554,7 @@ export class SwapComposer {
    *
    * @example
    * ```typescript
-   * const swap = await deflex.newSwap({ quote, address, slippage, signer })
+   * const swap = await router.newSwap({ quote, address, slippage, signer })
    * const result = await swap.execute()
    *
    * const summary = swap.getSummary()
@@ -620,20 +620,20 @@ export class SwapComposer {
     let inputTxnRelativeIndex: number | undefined
     let inputTxn: Transaction | undefined
 
-    for (let i = 0; i < this.deflexTxns.length; i++) {
-      const deflexTxn = this.deflexTxns[i]
-      if (!deflexTxn) continue
+    for (let i = 0; i < this.swapTxns.length; i++) {
+      const swapTxn = this.swapTxns[i]
+      if (!swapTxn) continue
 
       try {
-        const txnBytes = Buffer.from(deflexTxn.data, 'base64')
+        const txnBytes = Buffer.from(swapTxn.data, 'base64')
         const txn = decodeUnsignedTransaction(txnBytes)
         delete txn.group
 
-        if (deflexTxn.signature !== false) {
+        if (swapTxn.signature !== false) {
           // Pre-signed transaction - use custom Deflex signer
           swapTxns.push({
             txn,
-            signer: this.createDeflexSigner(deflexTxn.signature),
+            signer: this.createSwapSigner(swapTxn.signature),
           })
         } else {
           // Input payment or asset transfer transaction - use configured signer
@@ -730,7 +730,7 @@ export class SwapComposer {
   /**
    * Creates a TransactionSigner function for Deflex pre-signed transactions
    */
-  private createDeflexSigner(signature: DeflexSignature): TransactionSigner {
+  private createSwapSigner(signature: Signature): TransactionSigner {
     return async (
       txnGroup: Transaction[],
       indexesToSign: number[],
@@ -738,7 +738,7 @@ export class SwapComposer {
       return indexesToSign.map((i) => {
         const txn = txnGroup[i]
         if (!txn) throw new Error(`Transaction at index ${i} not found`)
-        return this.signDeflexTransaction(txn, signature)
+        return this.signSwapTransaction(txn, signature)
       })
     }
   }
@@ -746,9 +746,9 @@ export class SwapComposer {
   /**
    * Re-signs a Deflex transaction using the provided logic signature or secret key
    */
-  private signDeflexTransaction(
+  private signSwapTransaction(
     transaction: Transaction,
-    signature: DeflexSignature,
+    signature: Signature,
   ): Uint8Array {
     try {
       if (signature.type === 'logic_signature') {
@@ -795,8 +795,8 @@ export class SwapComposer {
   ): Promise<TransactionWithSigner[]> {
     const allTxns: TransactionWithSigner[] = []
 
-    // Convert to DeflexQuote if needed
-    const quote: DeflexQuote =
+    // Convert to SwapQuote if needed
+    const quote: SwapQuote =
       'createdAt' in this.quote
         ? this.quote
         : {

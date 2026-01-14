@@ -19,33 +19,33 @@ import type { SwapMiddleware } from './middleware'
 import type {
   FetchQuoteResponse,
   FetchSwapTxnsResponse,
-  DeflexConfig,
-  DeflexConfigParams,
+  Config,
+  ConfigParams,
   FetchSwapTxnsParams,
   FetchSwapTxnsBody,
   FetchQuoteParams,
-  DeflexQuote,
+  SwapQuote,
 } from './types'
 
 /**
- * Client for interacting with the Deflex order router API
+ * Client for interacting with the Haystack order router API
  *
- * The DeflexClient provides methods to fetch swap quotes and create transaction composers
+ * The RouterClient provides methods to fetch swap quotes and create transaction composers
  * for executing swaps on the Algorand blockchain. It handles API communication, transaction
  * validation, and automatic asset/app opt-in detection.
  *
  * @example
  * ```typescript
- * const deflex = new DeflexClient({
+ * const router = new RouterClient({
  *   apiKey: 'your-api-key',
  * })
  * ```
  *
  * @example
  * ```typescript
- * const deflex = new DeflexClient({
+ * const router = new RouterClient({
  *   apiKey: 'your-api-key',
- *   apiBaseUrl: 'https://deflex.txnlab.dev',
+ *   apiBaseUrl: 'https://hayrouter.txnlab.dev',
  *   algodUri: 'https://mainnet-api.4160.nodely.dev/',
  *   algodToken: '',
  *   algodPort: 443,
@@ -55,17 +55,17 @@ import type {
  * })
  * ```
  */
-export class DeflexClient {
-  private readonly config: DeflexConfig
+export class RouterClient {
+  private readonly config: Config
   private readonly algodClient: Algodv2
   private readonly middleware: SwapMiddleware[]
 
   /**
-   * Create a new DeflexClient instance
+   * Create a new RouterClient instance
    *
    * @param config - Configuration parameters
-   * @param config.apiKey - API key for Deflex API (required)
-   * @param config.apiBaseUrl - Base URL for the Deflex API (default: https://deflex.txnlab.dev)
+   * @param config.apiKey - API key for Haystack Router API (required)
+   * @param config.apiBaseUrl - Base URL for the Haystack Router API (default: https://hayrouter.txnlab.dev)
    * @param config.algodUri - Algod node URI (default: https://mainnet-api.4160.nodely.dev/)
    * @param config.algodToken - Algod node token (default: '')
    * @param config.algodPort - Algod node port (default: 443)
@@ -75,7 +75,7 @@ export class DeflexClient {
    * @param config.debugLevel - Debug logging level (default: 'none')
    * @param config.middleware - Array of middleware to apply to swaps (default: [])
    */
-  constructor(config: DeflexConfigParams & { middleware?: SwapMiddleware[] }) {
+  constructor(config: ConfigParams & { middleware?: SwapMiddleware[] }) {
     // Set logger level FIRST (before any operations)
     const debugLevel = config.debugLevel ?? DEFAULT_DEBUG_LEVEL
     Logger.setLevel(debugLevel)
@@ -107,9 +107,9 @@ export class DeflexClient {
   }
 
   /**
-   * Fetch a swap quote from the Deflex API
+   * Fetch a swap quote from the Haystack Router API
    *
-   * Requests optimal swap routing from the Deflex API. The quote includes routing
+   * Requests optimal swap routing from the Haystack Router API. The quote includes routing
    * information, price impact, required opt-ins, and an encrypted transaction payload.
    *
    * @param params - Parameters for the quote request
@@ -129,7 +129,7 @@ export class DeflexClient {
    *
    * @example
    * ```typescript
-   * const quote = await deflex.fetchQuote({
+   * const quote = await router.fetchQuote({
    *   address: 'ABC...',
    *   fromASAID: 0,           // ALGO
    *   toASAID: 31566704,      // USDC
@@ -225,8 +225,8 @@ export class DeflexClient {
    * @example
    * ```typescript
    * // Check if opt-in needed for output asset before fetching quote
-   * const needsOptIn = await deflex.needsAssetOptIn(userAddress, toAssetId)
-   * const quote = await deflex.fetchQuote({
+   * const needsOptIn = await router.needsAssetOptIn(userAddress, toAssetId)
+   * const quote = await router.fetchQuote({
    *   fromAssetId,
    *   toAssetId,
    *   amount,
@@ -251,7 +251,7 @@ export class DeflexClient {
   }
 
   /**
-   * Fetch swap transactions from the Deflex API
+   * Fetch swap transactions from the Haystack Router API
    *
    * Decrypts the quote payload and generates executable swap transactions for the
    * specified signer address with the given slippage tolerance.
@@ -304,11 +304,11 @@ export class DeflexClient {
    * @param params.maxDepth - The maximum depth (default: 4)
    * @param params.address - The address of the account that will perform the swap (recommended when using `config.autoOptIn` or `params.optIn`)
    * @param params.optIn - Whether to include asset opt-in transaction
-   * @returns A DeflexQuote enhanced quote result
+   * @returns A SwapQuote enhanced quote result
    *
    * @example
    * ```typescript
-   * const quote = await deflex.newQuote({
+   * const quote = await router.newQuote({
    *   address: 'ABC...',
    *   fromASAID: 0,
    *   toASAID: 31566704,
@@ -322,7 +322,7 @@ export class DeflexClient {
    * console.log(quote.createdAt) // number - timestamp
    * ```
    */
-  async newQuote(params: FetchQuoteParams): Promise<DeflexQuote> {
+  async newQuote(params: FetchQuoteParams): Promise<SwapQuote> {
     // Block usage of _allowNonComposableSwaps with newQuote (middleware path)
     if (params._allowNonComposableSwaps) {
       throw new Error(
@@ -380,16 +380,16 @@ export class DeflexClient {
    * @example
    * ```typescript
    * // Basic swap
-   * const quote = await deflex.newQuote({ ... })
-   * await deflex.newSwap({ quote, address, slippage, signer })
+   * const quote = await router.newQuote({ ... })
+   * await router.newSwap({ quote, address, slippage, signer })
    *   .execute()
    * ```
    *
    * @example
    * ```typescript
    * // Advanced swap with custom transactions
-   * const quote = await deflex.newQuote({ ... })
-   * const swap = await deflex.newSwap({
+   * const quote = await router.newQuote({ ... })
+   * const swap = await router.newSwap({
    *   quote,
    *   address,
    *   slippage,
@@ -413,7 +413,7 @@ export class DeflexClient {
    * ```
    */
   async newSwap(config: {
-    quote: DeflexQuote | FetchQuoteResponse
+    quote: SwapQuote | FetchQuoteResponse
     address: string
     slippage: number
     signer: TransactionSigner | SignerFunction
@@ -431,7 +431,7 @@ export class DeflexClient {
     // Create the composer
     const composer = new SwapComposer({
       quote,
-      deflexTxns: swapResponse.txns,
+      swapTxns: swapResponse.txns,
       algodClient: this.algodClient,
       address,
       signer,

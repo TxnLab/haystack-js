@@ -1,15 +1,17 @@
-# Deflex SDK
+# Haystack Router SDK
 
-This repository contains the Deflex SDK and example implementations for integrating Deflex Order Router into your applications.
+> **Note:** This package was formerly known as `@txnlab/deflex`. If you're migrating from the old package, see the [migration guide](./MIGRATION.md).
+
+This repository contains the Haystack Router SDK and example implementations for integrating Haystack Order Router into your applications.
 
 ## Packages
 
-### [@txnlab/deflex](./packages/deflex)
+### [@txnlab/haystack-router](./packages/haystack)
 
-TypeScript/JavaScript SDK for [Deflex Order Router](https://txnlab.gitbook.io/deflex-api) - smart order routing and DEX aggregation on Algorand.
+TypeScript/JavaScript SDK for [Haystack Order Router](https://txnlab.gitbook.io/haystack-router-api) - smart order routing and DEX aggregation on Algorand.
 
-- **Documentation**: [packages/deflex/README.md](./packages/deflex/README.md)
-- **npm**: [@txnlab/deflex](https://www.npmjs.com/package/@txnlab/deflex)
+- **Documentation**: [packages/haystack/README.md](./packages/haystack/README.md)
+- **npm**: [@txnlab/haystack-router](https://www.npmjs.com/package/@txnlab/haystack-router)
 
 ## Examples
 
@@ -17,7 +19,7 @@ The [examples](./examples) directory contains complete working implementations:
 
 ### [React](./examples/react)
 
-Simple React application demonstrating basic Deflex SDK integration.
+Simple React application demonstrating basic Haystack Router SDK integration.
 
 - React 18 with TypeScript and Vite
 - Multiple wallet support (Pera, Defly, Lute)
@@ -47,7 +49,7 @@ This is a pnpm workspace monorepo. All packages and examples share dependencies 
 
 ### Prerequisites
 
-- **Deflex API Key** - Request an API key by emailing [support@txnlab.dev](mailto:support@txnlab.dev)
+- **Haystack Router API Key** - Request an API key by emailing [support@txnlab.dev](mailto:support@txnlab.dev)
 - algosdk 3.0.0 or later (peer dependency)
 - Node.js >= 20
 - pnpm 10.20.0 or later
@@ -91,24 +93,24 @@ pnpm dev
 Install the SDK in your project:
 
 ```bash
-npm install @txnlab/deflex algosdk
+npm install @txnlab/haystack-router algosdk
 ```
 
 Basic usage:
 
 ```typescript
-import { DeflexClient } from '@txnlab/deflex'
+import { RouterClient } from '@txnlab/haystack-router'
 import { useWallet } from '@txnlab/use-wallet-react'
 
 const { activeAddress, transactionSigner } = useWallet()
 
 // Initialize client
-const deflex = new DeflexClient({
+const router = new RouterClient({
 	apiKey: 'your-api-key',
 })
 
 // Get quote
-const quote = await deflex.newQuote({
+const quote = await router.newQuote({
 	fromASAID: 0, // ALGO
 	toASAID: 31566704, // USDC
 	amount: 1_000_000, // 1 ALGO
@@ -116,7 +118,7 @@ const quote = await deflex.newQuote({
 })
 
 // Execute swap
-const swap = await deflex.newSwap({
+const swap = await router.newSwap({
 	quote,
 	address: activeAddress,
 	signer: transactionSigner,
@@ -156,19 +158,19 @@ Root-level scripts:
 
 ## Documentation
 
-- **SDK Documentation**: [packages/deflex/README.md](./packages/deflex/README.md)
+- **SDK Documentation**: [packages/haystack/README.md](./packages/haystack/README.md)
 - **Examples Guide**: [examples/README.md](./examples/README.md)
-- **Deflex API Docs**: [https://txnlab.gitbook.io/deflex-api](https://txnlab.gitbook.io/deflex-api)
+- **Haystack Router API Docs**: [https://txnlab.gitbook.io/haystack-router-api](https://txnlab.gitbook.io/haystack-router-api)
 
 ## Contributing
 
 Contributions are welcome! The monorepo structure makes it easy to:
 
-1. Make changes to the SDK in `packages/deflex/`
+1. Make changes to the SDK in `packages/haystack/`
 2. Test changes immediately in any example project
 3. Examples automatically use the local SDK via workspace protocol
 
-All examples reference the SDK using `"@txnlab/deflex": "workspace:*"` in their package.json.
+All examples reference the SDK using `"@txnlab/haystack-router": "workspace:*"` in their package.json.
 
 ## License
 
@@ -176,7 +178,7 @@ MIT - see [LICENSE](./LICENSE) for details
 
 ## Support
 
-- [GitHub Issues](https://github.com/TxnLab/deflex-js/issues)
+- [GitHub Issues](https://github.com/TxnLab/haystack-js/issues)
 - [Discord](https://discord.gg/Ek3dNyzG)
 - [TxnLab](https://txnlab.dev)
 

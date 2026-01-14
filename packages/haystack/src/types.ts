@@ -7,18 +7,17 @@ import type {
   OnApplicationComplete,
   ResourceReference,
   SuggestedParams,
-  Transaction,
   TransactionSigner,
 } from 'algosdk'
 
 /**
- * Configuration parameters for initializing DeflexClient
+ * Configuration parameters for initializing RouterClient
  */
-export interface DeflexConfigParams {
-  /** API key for Deflex API (required) */
+export interface ConfigParams {
+  /** API key for Haystack Router API (required) */
   readonly apiKey: string
 
-  /** Base URL for the Deflex API (default: https://deflex.txnlab.dev) */
+  /** Base URL for the Haystack Router API (default: https://hayrouter.txnlab.dev) */
   readonly apiBaseUrl?: string
 
   /** Algod node URI (default: https://mainnet-api.4160.nodely.dev/) */
@@ -55,8 +54,8 @@ export interface DeflexConfigParams {
  *
  * @internal
  */
-export type DeflexConfig = Omit<
-  Required<DeflexConfigParams>,
+export type Config = Omit<
+  Required<ConfigParams>,
   'referrerAddress' | 'debugLevel'
 > & {
   readonly referrerAddress: string | undefined
@@ -69,7 +68,7 @@ export type DeflexConfig = Omit<
 export type QuoteType = 'fixed-input' | 'fixed-output'
 
 /**
- * Parameters for requesting a swap quote from the Deflex API (raw API method)
+ * Parameters for requesting a swap quote from the Haystack Router API (raw API method)
  */
 export interface FetchQuoteParams {
   /** Input asset ID */
@@ -129,7 +128,7 @@ export interface FetchQuoteParams {
 }
 
 /**
- * Asset information from the Deflex API
+ * Asset information from the Haystack Router API
  */
 export interface Asset {
   /** Asset ID */
@@ -203,7 +202,7 @@ export interface TxnPayload {
 }
 
 /**
- * Quote response from the Deflex API
+ * Quote response from the Haystack Router API
  */
 export interface FetchQuoteResponse {
   /** The quoted output amount or input amount (depending on quote type) */
@@ -243,11 +242,11 @@ export interface FetchQuoteResponse {
 }
 
 /**
- * Enhanced quote result returned by DeflexClient.newQuote()
+ * Enhanced quote result returned by RouterClient.newQuote()
  *
  * Extends the raw API response with additional metadata and type normalization.
  */
-export type DeflexQuote = Omit<FetchQuoteResponse, 'quote'> & {
+export type SwapQuote = Omit<FetchQuoteResponse, 'quote'> & {
   /**
    * The quoted output amount or input amount (coerced to bigint)
    *
@@ -267,9 +266,9 @@ export type DeflexQuote = Omit<FetchQuoteResponse, 'quote'> & {
 }
 
 /**
- * Transaction signature from the Deflex API
+ * Transaction signature from the Haystack Router API
  */
-export interface DeflexSignature {
+export interface Signature {
   /** Signature type */
   readonly type: 'logic_signature' | 'secret_key'
   /** Signature data */
@@ -277,9 +276,9 @@ export interface DeflexSignature {
 }
 
 /**
- * Transaction data from the Deflex API
+ * Transaction data from the Haystack Router API
  */
-export interface DeflexTransaction {
+export interface SwapTransaction {
   /** Base64-encoded transaction data */
   readonly data: string
   /** Group ID for the transaction */
@@ -287,7 +286,7 @@ export interface DeflexTransaction {
   /** Logic signature blob (if applicable) */
   readonly logicSigBlob: unknown | false
   /** Signature data (false if user must sign) */
-  readonly signature: DeflexSignature | false
+  readonly signature: Signature | false
 }
 
 /**
@@ -295,7 +294,7 @@ export interface DeflexTransaction {
  */
 export interface FetchSwapTxnsParams {
   /** Quote response from fetchQuote() or newQuote() */
-  readonly quote: FetchQuoteResponse | DeflexQuote
+  readonly quote: FetchQuoteResponse | SwapQuote
 
   /** Algorand address that will sign the transactions */
   readonly address: string
@@ -325,20 +324,7 @@ export interface FetchSwapTxnsBody {
  */
 export interface FetchSwapTxnsResponse {
   /** Array of transaction data */
-  readonly txns: DeflexTransaction[]
-}
-
-/**
- * Processed transaction with optional pre-signature
- *
- * @deprecated This type is no longer used internally. Use algosdk.TransactionWithSigner instead.
- * @internal
- */
-export interface SwapTransaction {
-  /** The Algorand transaction */
-  readonly txn: Transaction
-  /** Pre-signature from Deflex (if applicable) */
-  readonly deflexSignature?: DeflexSignature
+  readonly txns: SwapTransaction[]
 }
 
 /**

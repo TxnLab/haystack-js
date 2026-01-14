@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useWallet } from '@txnlab/use-wallet-react'
-import { DeflexClient, type DeflexQuote } from '@txnlab/deflex'
+import { RouterClient, type SwapQuote } from '@txnlab/haystack-router'
 import { WalletMenu } from './components/WalletMenu'
 
 const ALGO_ASSET_ID = 0
@@ -13,17 +13,17 @@ function App() {
   const [toAsset, setToAsset] = useState(USDC_ASSET_ID)
   const [amount, setAmount] = useState('1')
   const [slippage, setSlippage] = useState('1')
-  const [quote, setQuote] = useState<DeflexQuote | null>(null)
+  const [quote, setQuote] = useState<SwapQuote | null>(null)
   const [loading, setLoading] = useState(false)
   const [executing, setExecuting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
-  const apiKey = import.meta.env.VITE_DEFLEX_API_KEY
+  const apiKey = import.meta.env.VITE_HAYSTACK_ROUTER_API_KEY
 
   const getQuote = async () => {
     if (!apiKey) {
-      setError('Please set VITE_DEFLEX_API_KEY in your .env file')
+      setError('Please set VITE_HAYSTACK_ROUTER_API_KEY in your .env file')
       return
     }
 
@@ -33,7 +33,7 @@ function App() {
     setQuote(null)
 
     try {
-      const deflex = new DeflexClient({
+      const router = new RouterClient({
         apiKey,
         autoOptIn: true,
       })
@@ -42,7 +42,7 @@ function App() {
         Math.floor(parseFloat(amount) * 1_000_000),
       )
 
-      const quoteResult = await deflex.newQuote({
+      const quoteResult = await router.newQuote({
         fromASAID: fromAsset,
         toASAID: toAsset,
         amount: amountInBaseUnits,
@@ -67,12 +67,12 @@ function App() {
     setSuccess(null)
 
     try {
-      const deflex = new DeflexClient({
+      const router = new RouterClient({
         apiKey: apiKey || '',
         autoOptIn: true,
       })
 
-      const swap = await deflex.newSwap({
+      const swap = await router.newSwap({
         quote,
         address: activeAddress,
         signer: transactionSigner,
@@ -99,7 +99,7 @@ function App() {
 
   return (
     <div className="app">
-      <h1>Deflex SDK Demo</h1>
+      <h1>Haystack Router SDK Demo</h1>
       <p>React + Vite Example</p>
 
       <div className="wallet-section">

@@ -1,12 +1,12 @@
-# Deflex SDK Examples
+# Haystack Router SDK Examples
 
-This directory contains complete example implementations demonstrating how to integrate the Deflex SDK into different types of applications.
+This directory contains complete example implementations demonstrating how to integrate the Haystack Router SDK into different types of applications.
 
 ## Available Examples
 
 ### [React](./react)
 
-A simple React application demonstrating basic Deflex SDK integration.
+A simple React application demonstrating basic Haystack Router SDK integration.
 
 **Key Features:**
 
@@ -56,7 +56,7 @@ All examples use the local SDK package via pnpm workspaces. This means changes t
 
 ### Prerequisites
 
-- **Deflex API Key** - Request an API key by emailing [support@txnlab.dev](mailto:support@txnlab.dev)
+- **Haystack Router API Key** - Request an API key by emailing [support@txnlab.dev](mailto:support@txnlab.dev)
 - algosdk 3.0.0 or later (peer dependency)
 - Node.js >= 20
 - pnpm 10.20.0 or later
@@ -97,18 +97,18 @@ pnpm dev
 
 ## Configuration
 
-Each example requires a Deflex API key. Create a `.env` file in the example directory:
+Each example requires a Haystack Router API key. Create a `.env` file in the example directory:
 
 ### React / React Query
 
 ```bash
-VITE_DEFLEX_API_KEY=your-api-key-here
+VITE_HAYSTACK_ROUTER_API_KEY=your-api-key-here
 ```
 
 ### Node.js CLI
 
 ```bash
-DEFLEX_API_KEY=your-api-key-here
+HAYSTACK_ROUTER_API_KEY=your-api-key-here
 ACCOUNT_MNEMONIC="your 25 word mnemonic phrase"
 ```
 
@@ -116,12 +116,12 @@ ACCOUNT_MNEMONIC="your 25 word mnemonic phrase"
 
 The monorepo structure enables a smooth development workflow:
 
-1. **Make SDK changes** in `packages/deflex/src/`
+1. **Make SDK changes** in `packages/haystack/src/`
 2. **Rebuild the SDK**: `pnpm build` (from root)
 3. **Test immediately** in any example (changes are reflected automatically)
 
 ## Support
 
-- [GitHub Issues](https://github.com/TxnLab/deflex-js/issues)
+- [GitHub Issues](https://github.com/TxnLab/haystack-js/issues)
 - [Discord](https://discord.gg/Ek3dNyzG)
-- [Documentation](https://txnlab.gitbook.io/deflex-api)
+- [Documentation](https://txnlab.gitbook.io/haystack-router-api)

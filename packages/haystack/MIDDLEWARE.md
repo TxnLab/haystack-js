@@ -1,6 +1,6 @@
-# Deflex Middleware Developer Guide
+# Haystack Router Middleware Developer Guide
 
-This guide explains how to create middleware for the Deflex SDK to support assets with special transfer requirements.
+This guide explains how to create middleware for the Haystack Router SDK to support assets with special transfer requirements.
 
 ## Table of Contents
 
@@ -21,7 +21,7 @@ Some Algorand assets require additional transactions to be included in swap tran
 - Assets that interact with smart contracts during transfers
 - Assets with custom tokenomics logic
 
-Rather than modifying the Deflex SDK for each special asset type, middleware allows you to create standalone packages that integrate seamlessly with the SDK.
+Rather than modifying the Haystack Router SDK for each special asset type, middleware allows you to create standalone packages that integrate seamlessly with the SDK.
 
 ## When to Use Middleware
 
@@ -81,7 +81,7 @@ async shouldApply(params) {
 #### `adjustQuoteParams(params): Promise<FetchQuoteParams>`
 Modify quote request parameters before fetching the quote.
 
-> **⚠️ IMPORTANT**: If your middleware adds transactions via `beforeSwap()` or `afterSwap()`, you **MUST** implement this method and reduce `maxGroupSize` accordingly. The Deflex API may return routes that use all 16 available transaction slots, causing the swap to fail if you don't reserve space for the extra transactions.
+> **⚠️ IMPORTANT**: If your middleware adds transactions via `beforeSwap()` or `afterSwap()`, you **MUST** implement this method and reduce `maxGroupSize` accordingly. The Haystack Router API may return routes that use all 16 available transaction slots, causing the swap to fail if you don't reserve space for the extra transactions.
 
 **Common adjustments:**
 - Reduce `maxGroupSize` to account for additional transactions (**REQUIRED** if adding txns)
@@ -192,7 +192,7 @@ The context object provided to `beforeSwap` and `afterSwap` hooks:
 
 ```typescript
 interface SwapContext {
-  readonly quote: DeflexQuote           // The quote result
+  readonly quote: SwapQuote           // The quote result
   readonly address: string              // User's address
   readonly algodClient: Algodv2         // Algod client for queries
   readonly suggestedParams: SuggestedParams  // Transaction parameters
@@ -210,7 +210,7 @@ Create a new npm package:
 
 ```bash
 npm init -y
-npm install --save-peer @txnlab/deflex algosdk
+npm install --save-peer @txnlab/haystack-router algosdk
 npm install --save-dev typescript @types/node
 ```
 
@@ -224,7 +224,7 @@ import type {
   SwapMiddleware,
   SwapContext,
   FetchQuoteParams,
-} from '@txnlab/deflex'
+} from '@txnlab/haystack-router'
 import type { TransactionWithSigner } from 'algosdk'
 
 export interface CustomAssetConfig {
@@ -326,9 +326,9 @@ async beforeSwap(context: SwapContext): Promise<TransactionWithSigner[]> {
 
 ```json
 {
-  "name": "@your-org/deflex-middleware",
+  "name": "@your-org/haystack-router-middleware",
   "version": "1.0.0",
-  "description": "Deflex middleware for CustomAsset",
+  "description": "Haystack Router middleware for CustomAsset",
   "type": "module",
   "exports": {
     ".": {
@@ -338,7 +338,7 @@ async beforeSwap(context: SwapContext): Promise<TransactionWithSigner[]> {
   },
   "keywords": ["deflex", "algorand", "dex", "middleware"],
   "peerDependencies": {
-    "@txnlab/deflex": "^1.2.0",
+    "@txnlab/haystack-router": "^1.2.0",
     "algosdk": "^3.0.0"
   }
 }
@@ -349,34 +349,34 @@ async beforeSwap(context: SwapContext): Promise<TransactionWithSigner[]> {
 Include clear usage instructions:
 
 ````markdown
-# CustomAsset Deflex Middleware
+# CustomAsset Haystack Router Middleware
 
 Middleware for swapping CustomAsset tokens via Deflex.
 
 ## Installation
 
 ```bash
-npm install @your-org/deflex-middleware @txnlab/deflex algosdk
+npm install @your-org/haystack-router-middleware @txnlab/haystack-router algosdk
 ```
 
 ## Usage
 
 ```typescript
-import { DeflexClient } from '@txnlab/deflex'
-import { CustomAssetMiddleware } from '@your-org/deflex-middleware'
+import { RouterClient } from '@txnlab/haystack-router'
+import { CustomAssetMiddleware } from '@your-org/haystack-router-middleware'
 
 const middleware = new CustomAssetMiddleware({
   contractAppId: 123456,
 })
 
-const deflex = new DeflexClient({
+const router = new RouterClient({
   apiKey: 'your-api-key',
   middleware: [middleware],
 })
 
 // Use normally
-const quote = await deflex.newQuote({ ... })
-const swap = await deflex.newSwap({ ... })
+const quote = await router.newQuote({ ... })
+const swap = await router.newSwap({ ... })
 await swap.execute()
 ```
 ````
@@ -391,7 +391,7 @@ If your middleware adds ANY transactions via `beforeSwap()` or `afterSwap()`, yo
 
 **Why this is critical:**
 - Algorand has a hard limit of 16 transactions per atomic group
-- Deflex API will optimize routes to use as many transactions as the `maxGroupSize` allows
+- Haystack Router API will optimize routes to use as many transactions as the `maxGroupSize` allows
 - If Deflex returns a 16-transaction route and you try to add more, the transaction will **fail**
 
 **Example:**
@@ -442,7 +442,7 @@ import type {
   SwapMiddleware,
   SwapContext,
   FetchQuoteParams,
-} from '@txnlab/deflex'
+} from '@txnlab/haystack-router'
 import {
   makeApplicationNoOpTxnFromObject,
   makeAssetTransferTxnWithSuggestedParamsFromObject,
@@ -624,5 +624,5 @@ export class FirstStageMiddleware implements SwapMiddleware {
 
 ## Questions?
 
-- [GitHub Issues](https://github.com/TxnLab/deflex-js/issues)
+- [GitHub Issues](https://github.com/TxnLab/haystack-js/issues)
 - [Discord](https://discord.gg/Ek3dNyzG)

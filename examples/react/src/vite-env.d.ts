@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
-  readonly VITE_DEFLEX_API_KEY: string
+  readonly VITE_HAYSTACK_ROUTER_API_KEY: string
 }
 
 interface ImportMeta {

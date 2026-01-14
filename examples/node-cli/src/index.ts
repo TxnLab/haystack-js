@@ -2,7 +2,7 @@
 
 import { config } from 'dotenv'
 import algosdk from 'algosdk'
-import { DeflexClient } from '@txnlab/deflex'
+import { RouterClient } from '@txnlab/haystack-router'
 
 // Load environment variables
 config()
@@ -38,7 +38,7 @@ async function createAccountSigner(mnemonic: string) {
  * Parse and validate environment variables
  */
 function parseConfig(): SwapConfig {
-  const apiKey = process.env.DEFLEX_API_KEY
+  const apiKey = process.env.HAYSTACK_ROUTER_API_KEY
   const mnemonic = process.env.ACCOUNT_MNEMONIC
   const fromAssetId = parseInt(process.env.FROM_ASSET_ID || '0', 10)
   const toAssetId = parseInt(process.env.TO_ASSET_ID || '31566704', 10)
@@ -46,7 +46,7 @@ function parseConfig(): SwapConfig {
   const slippage = parseFloat(process.env.SLIPPAGE || '1')
 
   if (!apiKey) {
-    throw new Error('DEFLEX_API_KEY is required in .env file')
+    throw new Error('HAYSTACK_ROUTER_API_KEY is required in .env file')
   }
 
   if (!mnemonic) {
@@ -77,7 +77,7 @@ function formatAmount(amount: bigint, decimals = 6): string {
  * Main swap execution function
  */
 async function executeSwap() {
-  console.log('🚀 Deflex CLI Swap Tool\n')
+  console.log('🚀 Haystack Router CLI Swap Tool\n')
 
   try {
     // Parse configuration
@@ -91,7 +91,7 @@ async function executeSwap() {
     console.log(`   Slippage: ${config.slippage}%\n`)
 
     // Initialize Deflex client
-    const deflex = new DeflexClient({
+    const router = new RouterClient({
       apiKey: config.apiKey,
       autoOptIn: true,
     })
@@ -105,7 +105,7 @@ async function executeSwap() {
 
     // Fetch quote
     console.log('📊 Fetching quote...')
-    const quote = await deflex.newQuote({
+    const quote = await router.newQuote({
       fromASAID: config.fromAssetId,
       toASAID: config.toAssetId,
       amount: config.amount,
@@ -125,7 +125,7 @@ async function executeSwap() {
 
     // Execute swap
     console.log('🔄 Executing swap...')
-    const swap = await deflex.newSwap({
+    const swap = await router.newSwap({
       quote,
       address: account.addr.toString(),
       signer,

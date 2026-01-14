@@ -23,10 +23,10 @@ export default defineConfig(
     ],
   },
   {
-    files: ['packages/deflex/src/**/*.ts', 'packages/deflex/tests/**/*.ts'],
+    files: ['packages/haystack/src/**/*.ts', 'packages/haystack/tests/**/*.ts'],
     languageOptions: {
       parserOptions: {
-        project: './packages/deflex/tsconfig.json',
+        project: './packages/haystack/tsconfig.json',
         tsconfigRootDir: __dirname,
       },
     },
@@ -57,7 +57,7 @@ export default defineConfig(
     },
   },
   {
-    files: ['packages/deflex/tests/**/*.ts'],
+    files: ['packages/haystack/tests/**/*.ts'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unused-vars': [

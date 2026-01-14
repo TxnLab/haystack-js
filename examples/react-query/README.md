@@ -1,6 +1,6 @@
-# Deflex SDK - React + TanStack Query Example
+# Haystack Router SDK - React + TanStack Query Example
 
-A React application demonstrating advanced Deflex SDK integration with TanStack Query (React Query) for automatic quote fetching and optimistic updates.
+A React application demonstrating advanced Haystack Router SDK integration with TanStack Query (React Query) for automatic quote fetching and optimistic updates.
 
 ## Features
 
@@ -15,7 +15,7 @@ A React application demonstrating advanced Deflex SDK integration with TanStack 
 
 ## Prerequisites
 
-- **Deflex API Key** - Request an API key by emailing [support@txnlab.dev](mailto:support@txnlab.dev)
+- **Haystack Router API Key** - Request an API key by emailing [support@txnlab.dev](mailto:support@txnlab.dev)
 - Node.js >= 20
 - pnpm 10.20.0 or later
 
@@ -33,10 +33,10 @@ pnpm install
 cp .env.example .env
 ```
 
-3. Add your Deflex API key to the `.env` file:
+3. Add your Haystack Router API key to the `.env` file:
 
 ```
-VITE_DEFLEX_API_KEY=your-api-key-here
+VITE_HAYSTACK_ROUTER_API_KEY=your-api-key-here
 ```
 
 ## Development
@@ -77,7 +77,7 @@ pnpm preview
 
 ## React Query Integration
 
-This example showcases how to use TanStack Query (React Query) with the Deflex SDK:
+This example showcases how to use TanStack Query (React Query) with the Haystack Router SDK:
 
 ### Automatic Quote Fetching
 
@@ -85,8 +85,8 @@ This example showcases how to use TanStack Query (React Query) with the Deflex S
 const { data: quote, error, isLoading } = useQuery({
   queryKey: ['quote', fromAsset, toAsset, amount],
   queryFn: async () => {
-    const deflex = new DeflexClient({ apiKey, autoOptIn: true })
-    return await deflex.newQuote({
+    const router = new RouterClient({ apiKey, autoOptIn: true })
+    return await router.newQuote({
       fromASAID: fromAsset,
       toASAID: toAsset,
       amount: amountInBaseUnits,
@@ -103,8 +103,8 @@ const { data: quote, error, isLoading } = useQuery({
 ```typescript
 const swapMutation = useMutation({
   mutationFn: async () => {
-    const deflex = new DeflexClient({ apiKey, autoOptIn: true })
-    const swap = await deflex.newSwap({
+    const router = new RouterClient({ apiKey, autoOptIn: true })
+    const swap = await router.newSwap({
       quote,
       address: activeAddress,
       signer: transactionSigner,

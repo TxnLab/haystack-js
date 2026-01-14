@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useWallet } from '@txnlab/use-wallet-react'
-import { DeflexClient, type DeflexQuote } from '@txnlab/deflex'
+import { RouterClient, type SwapQuote } from '@txnlab/haystack-router'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { WalletMenu } from './components/WalletMenu'
 
@@ -17,7 +17,7 @@ function App() {
   const [slippage, setSlippage] = useState('1')
   const [success, setSuccess] = useState<string | null>(null)
 
-  const apiKey = import.meta.env.VITE_DEFLEX_API_KEY
+  const apiKey = import.meta.env.VITE_HAYSTACK_ROUTER_API_KEY
 
   // Debounce amount input
   useEffect(() => {
@@ -42,12 +42,14 @@ function App() {
     isLoading: isLoadingQuote,
   } = useQuery({
     queryKey: ['quote', fromAsset, toAsset, debouncedAmount],
-    queryFn: async (): Promise<DeflexQuote> => {
+    queryFn: async (): Promise<SwapQuote> => {
       if (!apiKey) {
-        throw new Error('Please set VITE_DEFLEX_API_KEY in your .env file')
+        throw new Error(
+          'Please set VITE_HAYSTACK_ROUTER_API_KEY in your .env file',
+        )
       }
 
-      const deflex = new DeflexClient({
+      const router = new RouterClient({
         apiKey,
         autoOptIn: true,
       })
@@ -56,7 +58,7 @@ function App() {
         Math.floor(parseFloat(debouncedAmount) * 1_000_000),
       )
 
-      const quoteResult = await deflex.newQuote({
+      const quoteResult = await router.newQuote({
         fromASAID: fromAsset,
         toASAID: toAsset,
         amount: amountInBaseUnits,
@@ -78,12 +80,12 @@ function App() {
         throw new Error('Missing required data for swap')
       }
 
-      const deflex = new DeflexClient({
+      const router = new RouterClient({
         apiKey: apiKey || '',
         autoOptIn: true,
       })
 
-      const swap = await deflex.newSwap({
+      const swap = await router.newSwap({
         quote,
         address: activeAddress,
         signer: transactionSigner,
@@ -112,7 +114,7 @@ function App() {
 
   return (
     <div className="app">
-      <h1>Deflex SDK Demo</h1>
+      <h1>Haystack Router SDK Demo</h1>
       <p>React + TanStack Query + Vite Example</p>
 
       <div className="wallet-section">

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { DeflexClient } from '../src/client'
+import { RouterClient } from '../src/client'
 import { AutoOptOutMiddleware } from '../src/middleware'
 import type { QuoteContext, SwapMiddleware } from '../src/middleware'
 import type { FetchQuoteParams } from '../src/types'
@@ -35,7 +35,7 @@ describe('Middleware System', () => {
     })
   })
 
-  describe('DeflexClient with middleware', () => {
+  describe('RouterClient with middleware', () => {
     it('should accept middleware in constructor', () => {
       const middleware: SwapMiddleware = {
         name: 'TestMiddleware',
@@ -43,20 +43,20 @@ describe('Middleware System', () => {
         shouldApply: async () => true,
       }
 
-      const deflex = new DeflexClient({
+      const router = new RouterClient({
         apiKey: 'test-key',
         middleware: [middleware],
       })
 
-      expect(deflex).toBeInstanceOf(DeflexClient)
+      expect(router).toBeInstanceOf(RouterClient)
     })
 
     it('should work without middleware', () => {
-      const deflex = new DeflexClient({
+      const router = new RouterClient({
         apiKey: 'test-key',
       })
 
-      expect(deflex).toBeInstanceOf(DeflexClient)
+      expect(router).toBeInstanceOf(RouterClient)
     })
 
     it('should accept multiple middleware instances', () => {
@@ -72,12 +72,12 @@ describe('Middleware System', () => {
         shouldApply: async () => true,
       }
 
-      const deflex = new DeflexClient({
+      const router = new RouterClient({
         apiKey: 'test-key',
         middleware: [middleware1, middleware2],
       })
 
-      expect(deflex).toBeInstanceOf(DeflexClient)
+      expect(router).toBeInstanceOf(RouterClient)
     })
   })
 
@@ -103,14 +103,14 @@ describe('Middleware System', () => {
         },
       }
 
-      const deflex = new DeflexClient({
+      const router = new RouterClient({
         apiKey: 'test-key',
         middleware: [middleware],
       })
 
       // Mock the fetchQuote method to capture params
       let capturedParams: FetchQuoteParams | null = null
-      vi.spyOn(deflex as any, 'fetchQuote').mockImplementation(
+      vi.spyOn(router as any, 'fetchQuote').mockImplementation(
         async (params) => {
           capturedParams = params as FetchQuoteParams
           return {
@@ -142,7 +142,7 @@ describe('Middleware System', () => {
         },
       )
 
-      await deflex.newQuote({
+      await router.newQuote({
         fromASAID: CUSTOM_ASSET_ID,
         toASAID: 0,
         amount: 1_000_000,
@@ -173,13 +173,13 @@ describe('Middleware System', () => {
         }),
       }
 
-      const deflex = new DeflexClient({
+      const router = new RouterClient({
         apiKey: 'test-key',
         middleware: [middleware1, middleware2],
       })
 
       let capturedParams: FetchQuoteParams | null = null
-      vi.spyOn(deflex as any, 'fetchQuote').mockImplementation(
+      vi.spyOn(router as any, 'fetchQuote').mockImplementation(
         async (params) => {
           capturedParams = params as FetchQuoteParams
           return {
@@ -211,7 +211,7 @@ describe('Middleware System', () => {
         },
       )
 
-      await deflex.newQuote({
+      await router.newQuote({
         fromASAID: 0,
         toASAID: 31566704,
         amount: 1_000_000,
@@ -231,13 +231,13 @@ describe('Middleware System', () => {
         }),
       }
 
-      const deflex = new DeflexClient({
+      const router = new RouterClient({
         apiKey: 'test-key',
         middleware: [middleware],
       })
 
       let capturedParams: FetchQuoteParams | null = null
-      vi.spyOn(deflex as any, 'fetchQuote').mockImplementation(
+      vi.spyOn(router as any, 'fetchQuote').mockImplementation(
         async (params) => {
           capturedParams = params as FetchQuoteParams
           return {
@@ -269,7 +269,7 @@ describe('Middleware System', () => {
         },
       )
 
-      await deflex.newQuote({
+      await router.newQuote({
         fromASAID: 0,
         toASAID: 31566704,
         amount: 1_000_000,
@@ -653,15 +653,15 @@ describe('Middleware System', () => {
       })
     })
 
-    describe('integration with DeflexClient', () => {
-      it('should work with DeflexClient and adjust quote params', async () => {
+    describe('integration with RouterClient', () => {
+      it('should work with RouterClient and adjust quote params', async () => {
         const assetId = 12345n
         const fullBalance = 1_000_000n
         const testAddress =
           'GD64YIY3TWGDMCNPP553DZPPR6LDUSFQOIJVFDPPXWEG3FVOJCCDBBHU5A'
         const middleware = new AutoOptOutMiddleware()
 
-        const deflex = new DeflexClient({
+        const router = new RouterClient({
           apiKey: 'test-key',
           middleware: [middleware],
         })
@@ -678,13 +678,13 @@ describe('Middleware System', () => {
           }),
         })
         vi.spyOn(
-          (deflex as any).algodClient,
+          (router as any).algodClient,
           'accountInformation',
         ).mockImplementation(mockAccountInfo)
 
         // Mock fetchQuote
         let capturedParams: FetchQuoteParams | null = null
-        vi.spyOn(deflex as any, 'fetchQuote').mockImplementation(
+        vi.spyOn(router as any, 'fetchQuote').mockImplementation(
           async (params: any) => {
             capturedParams = params as FetchQuoteParams
             return {
@@ -716,7 +716,7 @@ describe('Middleware System', () => {
           },
         )
 
-        await deflex.newQuote({
+        await router.newQuote({
           fromASAID: assetId,
           toASAID: 0,
           amount: fullBalance,

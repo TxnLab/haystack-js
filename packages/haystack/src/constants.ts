@@ -26,8 +26,8 @@ export const DEFAULT_ALGOD_TOKEN = ''
 /** Default Algod node port */
 export const DEFAULT_ALGOD_PORT = 443
 
-/** Default Deflex API base URL */
-export const DEFAULT_API_BASE_URL = 'https://deflex.txnlab.dev/api'
+/** Default Haystack Router API base URL */
+export const DEFAULT_API_BASE_URL = 'https://hayrouter.txnlab.dev/api'
 
 /** Default fee in basis points (0.10%) */
 export const DEFAULT_FEE_BPS = 10

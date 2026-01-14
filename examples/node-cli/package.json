@@ -1,8 +1,8 @@
 {
-  "name": "@txnlab/deflex-example-node-cli",
+  "name": "@txnlab/haystack-router-example-node-cli",
   "type": "module",
   "bin": {
-    "deflex-swap": "./dist/index.js"
+    "haystack-router-swap": "./dist/index.js"
   },
   "scripts": {
     "build": "tsc",
@@ -10,7 +10,7 @@
     "dev": "tsc && node dist/index.js"
   },
   "dependencies": {
-    "@txnlab/deflex": "workspace:*",
+    "@txnlab/haystack-router": "workspace:*",
     "algosdk": "^3.5.2",
     "dotenv": "^16.4.7"
   },

@@ -1,10 +1,10 @@
 {
-  "name": "@txnlab/deflex-monorepo",
+  "name": "@txnlab/haystack-router-monorepo",
   "private": true,
-  "description": "Monorepo for Deflex SDK and examples",
+  "description": "Monorepo for Haystack Router SDK and examples",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/TxnLab/deflex-js.git"
+    "url": "git+https://github.com/TxnLab/haystack-js.git"
   },
   "license": "MIT",
   "author": "Doug Richar <doug@txnlab.dev> (https://txnlab.dev)",
@@ -14,14 +14,14 @@
     "node": ">=20"
   },
   "scripts": {
-    "build": "pnpm --filter @txnlab/deflex run build",
-    "test": "pnpm --filter @txnlab/deflex run test",
-    "test:watch": "pnpm --filter @txnlab/deflex run test:watch",
-    "test:coverage": "pnpm --filter @txnlab/deflex run test:coverage",
+    "build": "pnpm --filter @txnlab/haystack-router run build",
+    "test": "pnpm --filter @txnlab/haystack-router run test",
+    "test:watch": "pnpm --filter @txnlab/haystack-router run test:watch",
+    "test:coverage": "pnpm --filter @txnlab/haystack-router run test:coverage",
     "lint": "eslint .",
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
-    "typecheck": "pnpm --filter @txnlab/deflex run typecheck",
+    "typecheck": "pnpm --filter @txnlab/haystack-router run typecheck",
     "ci": "pnpm run build && pnpm run lint && pnpm run format && pnpm run typecheck && pnpm run test",
     "release": "pnpm run ci && semantic-release"
   },
