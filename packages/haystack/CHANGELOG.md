@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/TxnLab/haystack-js/compare/v2.0.0...v2.0.1) (2026-01-14)
+
+
+### Bug Fixes
+
+* **ci:** switch to npm trusted publishing for automated releases ([#1](https://github.com/TxnLab/haystack-js/issues/1)) ([4da7636](https://github.com/TxnLab/haystack-js/commit/4da7636b55e7220805c4c86e05158b6d9f0fb703))
+
 # [2.0.0](https://github.com/TxnLab/haystack-js/compare/v1.8.0...v2.0.0) (2026-01-14)
 
 
