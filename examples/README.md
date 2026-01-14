@@ -124,4 +124,4 @@ The monorepo structure enables a smooth development workflow:
 
 - [GitHub Issues](https://github.com/TxnLab/haystack-js/issues)
 - [Discord](https://discord.gg/Ek3dNyzG)
-- [Documentation](https://txnlab.gitbook.io/deflex-api)
+- [Documentation](https://txnlab.gitbook.io/haystack-router)
