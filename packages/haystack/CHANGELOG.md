@@ -1,3 +1,10 @@
+## [2.0.2](https://github.com/TxnLab/haystack-js/compare/v2.0.1...v2.0.2) (2026-01-14)
+
+
+### Bug Fixes
+
+* **ci:** configure registry-url and update npm for OIDC publishing ([#2](https://github.com/TxnLab/haystack-js/issues/2)) ([56e1af3](https://github.com/TxnLab/haystack-js/commit/56e1af33d6d7237ec7255cf8dc86afe976369014))
+
 ## [2.0.1](https://github.com/TxnLab/haystack-js/compare/v2.0.0...v2.0.1) (2026-01-14)
 
 
