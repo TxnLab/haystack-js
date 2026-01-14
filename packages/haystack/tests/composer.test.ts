@@ -985,11 +985,7 @@ describe('SwapComposer', () => {
 
       const composer = new SwapComposer({
         quote: createMockQuote() as FetchQuoteResponse,
-        swapTxns: [
-          mockUserSwapTxn,
-          mockPreSignedSwapTxn,
-          mockUserSwapTxn,
-        ],
+        swapTxns: [mockUserSwapTxn, mockPreSignedSwapTxn, mockUserSwapTxn],
         algodClient: mockAlgodClient,
         address: validAddress,
         signer: async (
@@ -1042,11 +1038,7 @@ describe('SwapComposer', () => {
 
       const composer = new SwapComposer({
         quote: createMockQuote() as FetchQuoteResponse,
-        swapTxns: [
-          mockUserSwapTxn,
-          mockPreSignedSwapTxn,
-          mockUserSwapTxn,
-        ],
+        swapTxns: [mockUserSwapTxn, mockPreSignedSwapTxn, mockUserSwapTxn],
         algodClient: mockAlgodClient,
         address: validAddress,
         signer: async (
