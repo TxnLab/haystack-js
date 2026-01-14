@@ -1,6 +1,28 @@
 # [2.0.0](https://github.com/TxnLab/haystack-js/compare/v1.8.0...v2.0.0) (2026-01-14)
 
 
+* feat!: rebrand Deflex to Haystack Router ([d227c06](https://github.com/TxnLab/haystack-js/commit/d227c06e61b0a4dd67b70cef14a020b7cd7cf787))
+
+
+### BREAKING CHANGES
+
+* Package renamed from @txnlab/deflex to @txnlab/haystack-router
+
+- Renamed DeflexClient to RouterClient
+- Renamed DeflexQuote to SwapQuote
+- Renamed DeflexTransaction to SwapTransaction
+- Renamed DeflexConfig to Config
+- Renamed DeflexConfigParams to ConfigParams
+- Renamed DeflexSignature to Signature
+- Updated API endpoint to hayrouter.txnlab.dev
+- Repository moved to TxnLab/haystack-js
+- No functional changes, only naming
+
+See MIGRATION.md for migration guide
+
+# [2.0.0](https://github.com/TxnLab/haystack-js/compare/v1.8.0...v2.0.0) (2026-01-14)
+
+
 ## BREAKING CHANGES
 
 ### Package Renamed: @txnlab/deflex → @txnlab/haystack-router
