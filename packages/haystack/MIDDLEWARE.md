@@ -336,7 +336,7 @@ async beforeSwap(context: SwapContext): Promise<TransactionWithSigner[]> {
       "default": "./dist/index.js"
     }
   },
-  "keywords": ["deflex", "algorand", "dex", "middleware"],
+  "keywords": ["haystack-router", "algorand", "dex", "middleware"],
   "peerDependencies": {
     "@txnlab/haystack-router": "^1.2.0",
     "algosdk": "^3.0.0"
@@ -351,7 +351,7 @@ Include clear usage instructions:
 ````markdown
 # CustomAsset Haystack Router Middleware
 
-Middleware for swapping CustomAsset tokens via Deflex.
+Middleware for swapping CustomAsset tokens via Haystack Router.
 
 ## Installation
 
@@ -392,7 +392,7 @@ If your middleware adds ANY transactions via `beforeSwap()` or `afterSwap()`, yo
 **Why this is critical:**
 - Algorand has a hard limit of 16 transactions per atomic group
 - Haystack Router API will optimize routes to use as many transactions as the `maxGroupSize` allows
-- If Deflex returns a 16-transaction route and you try to add more, the transaction will **fail**
+- If Haystack Router returns a 16-transaction route and you try to add more, the transaction will **fail**
 
 **Example:**
 ```typescript

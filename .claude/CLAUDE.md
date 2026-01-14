@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Haystack Router SDK is a TypeScript/JavaScript SDK for the Haystack Order Router - smart order routing and DEX aggregation on Algorand. This is a pnpm workspace monorepo containing the SDK package and example implementations.
 
+> **Note:** This SDK was migrated from `@txnlab/deflex` (TxnLab/deflex-js) to `@txnlab/haystack-router` (TxnLab/haystack-js) as part of a rebranding effort. See [MIGRATION.md](../MIGRATION.md) for details on migrating from the old package.
+
 ## Commands
 
 ```bash

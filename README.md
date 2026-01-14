@@ -8,7 +8,7 @@ This repository contains the Haystack Router SDK and example implementations for
 
 ### [@txnlab/haystack-router](./packages/haystack)
 
-TypeScript/JavaScript SDK for [Haystack Order Router](https://txnlab.gitbook.io/haystack-router-api) - smart order routing and DEX aggregation on Algorand.
+TypeScript/JavaScript SDK for [Haystack Order Router](https://txnlab.gitbook.io/deflex-api) - smart order routing and DEX aggregation on Algorand.
 
 - **Documentation**: [packages/haystack/README.md](./packages/haystack/README.md)
 - **npm**: [@txnlab/haystack-router](https://www.npmjs.com/package/@txnlab/haystack-router)
@@ -160,7 +160,7 @@ Root-level scripts:
 
 - **SDK Documentation**: [packages/haystack/README.md](./packages/haystack/README.md)
 - **Examples Guide**: [examples/README.md](./examples/README.md)
-- **Haystack Router API Docs**: [https://txnlab.gitbook.io/haystack-router-api](https://txnlab.gitbook.io/haystack-router-api)
+- **API Docs**: [https://txnlab.gitbook.io/deflex-api](https://txnlab.gitbook.io/deflex-api) _(Haystack Router documentation coming soon)_
 
 ## Contributing
 

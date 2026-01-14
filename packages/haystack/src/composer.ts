@@ -630,7 +630,7 @@ export class SwapComposer {
         delete txn.group
 
         if (swapTxn.signature !== false) {
-          // Pre-signed transaction - use custom Deflex signer
+          // Pre-signed transaction - use custom Haystack Router signer
           swapTxns.push({
             txn,
             signer: this.createSwapSigner(swapTxn.signature),
@@ -728,7 +728,7 @@ export class SwapComposer {
   }
 
   /**
-   * Creates a TransactionSigner function for Deflex pre-signed transactions
+   * Creates a TransactionSigner function for Haystack Router pre-signed transactions
    */
   private createSwapSigner(signature: Signature): TransactionSigner {
     return async (
@@ -744,7 +744,7 @@ export class SwapComposer {
   }
 
   /**
-   * Re-signs a Deflex transaction using the provided logic signature or secret key
+   * Re-signs a Haystack Router transaction using the provided logic signature or secret key
    */
   private signSwapTransaction(
     transaction: Transaction,
