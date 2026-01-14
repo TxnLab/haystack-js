@@ -1,3 +1,10 @@
+## [2.0.3](https://github.com/TxnLab/haystack-js/compare/v2.0.2...v2.0.3) (2026-01-14)
+
+
+### Bug Fixes
+
+* **docs:** revert documentation links to deflex-api and complete rebranding cleanup ([#3](https://github.com/TxnLab/haystack-js/issues/3)) ([e3cac42](https://github.com/TxnLab/haystack-js/commit/e3cac4204b23fa20f90ce83ea9ab4fd0ce3d3b5b))
+
 ## [2.0.2](https://github.com/TxnLab/haystack-js/compare/v2.0.1...v2.0.2) (2026-01-14)
 
 
