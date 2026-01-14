@@ -90,7 +90,7 @@ async function executeSwap() {
     )
     console.log(`   Slippage: ${config.slippage}%\n`)
 
-    // Initialize Deflex client
+    // Initialize Haystack Router client
     const router = new RouterClient({
       apiKey: config.apiKey,
       autoOptIn: true,

@@ -967,7 +967,7 @@ describe('SwapComposer', () => {
         logicSig,
       )
 
-      const mockPreSignedDeflexTxn: SwapTransaction = {
+      const mockPreSignedSwapTxn: SwapTransaction = {
         data: Buffer.from(
           algosdk.encodeUnsignedTransaction(preSignedTxn),
         ).toString('base64'),
@@ -981,14 +981,14 @@ describe('SwapComposer', () => {
         logicSigBlob: false,
       }
 
-      const mockUserDeflexTxn: SwapTransaction = createMockSwapTxn()
+      const mockUserSwapTxn: SwapTransaction = createMockSwapTxn()
 
       const composer = new SwapComposer({
         quote: createMockQuote() as FetchQuoteResponse,
         swapTxns: [
-          mockUserDeflexTxn,
-          mockPreSignedDeflexTxn,
-          mockUserDeflexTxn,
+          mockUserSwapTxn,
+          mockPreSignedSwapTxn,
+          mockUserSwapTxn,
         ],
         algodClient: mockAlgodClient,
         address: validAddress,
@@ -1024,7 +1024,7 @@ describe('SwapComposer', () => {
         logicSig,
       )
 
-      const mockPreSignedDeflexTxn: SwapTransaction = {
+      const mockPreSignedSwapTxn: SwapTransaction = {
         data: Buffer.from(
           algosdk.encodeUnsignedTransaction(preSignedTxn),
         ).toString('base64'),
@@ -1038,14 +1038,14 @@ describe('SwapComposer', () => {
         logicSigBlob: false,
       }
 
-      const mockUserDeflexTxn: SwapTransaction = createMockSwapTxn()
+      const mockUserSwapTxn: SwapTransaction = createMockSwapTxn()
 
       const composer = new SwapComposer({
         quote: createMockQuote() as FetchQuoteResponse,
         swapTxns: [
-          mockUserDeflexTxn,
-          mockPreSignedDeflexTxn,
-          mockUserDeflexTxn,
+          mockUserSwapTxn,
+          mockPreSignedSwapTxn,
+          mockUserSwapTxn,
         ],
         algodClient: mockAlgodClient,
         address: validAddress,
@@ -1552,7 +1552,7 @@ describe('SwapComposer', () => {
         const txn = createMockTransaction(appAddress.toString())
         const signedTxn = algosdk.signLogicSigTransactionObject(txn, logicSig)
 
-        const mockDeflexLsigTxn: SwapTransaction = {
+        const mockLsigSwapTxn: SwapTransaction = {
           data: Buffer.from(algosdk.encodeUnsignedTransaction(txn)).toString(
             'base64',
           ),
@@ -1568,7 +1568,7 @@ describe('SwapComposer', () => {
 
         const composer = new SwapComposer({
           quote: createMockQuote() as FetchQuoteResponse,
-          swapTxns: [mockDeflexLsigTxn],
+          swapTxns: [mockLsigSwapTxn],
           algodClient: mockAlgodClient,
           address: validAddress,
           signer: async (txns: algosdk.Transaction[]) =>
@@ -1586,7 +1586,7 @@ describe('SwapComposer', () => {
         const account = algosdk.generateAccount()
         const txn = createMockTransaction(account.addr.toString())
 
-        const mockDeflexSkTxn: SwapTransaction = {
+        const mockSkSwapTxn: SwapTransaction = {
           data: Buffer.from(algosdk.encodeUnsignedTransaction(txn)).toString(
             'base64',
           ),
@@ -1602,7 +1602,7 @@ describe('SwapComposer', () => {
 
         const composer = new SwapComposer({
           quote: createMockQuote() as FetchQuoteResponse,
-          swapTxns: [mockDeflexSkTxn],
+          swapTxns: [mockSkSwapTxn],
           algodClient: mockAlgodClient,
           address: validAddress,
           signer: async (txns: algosdk.Transaction[]) =>
@@ -1661,7 +1661,7 @@ describe('SwapComposer', () => {
 
         await composer.addSwapTransactions()
 
-        // Error happens during signing when the Deflex signer is called
+        // Error happens during signing when the swap signer is called
         await expect(composer.sign()).rejects.toThrow(
           'Logic signature structure missing lsig field',
         )
@@ -1693,7 +1693,7 @@ describe('SwapComposer', () => {
 
         await composer.addSwapTransactions()
 
-        // Error happens during signing when the Deflex signer is called
+        // Error happens during signing when the swap signer is called
         await expect(composer.sign()).rejects.toThrow(
           'Unsupported signature type',
         )
@@ -1770,7 +1770,7 @@ describe('SwapComposer', () => {
         logicSig,
       )
 
-      const mockPreSignedDeflexTxn: SwapTransaction = {
+      const mockPreSignedSwapTxn: SwapTransaction = {
         data: Buffer.from(
           algosdk.encodeUnsignedTransaction(preSignedTxn),
         ).toString('base64'),
@@ -1784,7 +1784,7 @@ describe('SwapComposer', () => {
         logicSigBlob: false,
       }
 
-      const mockUserDeflexTxn: SwapTransaction = {
+      const mockUserSwapTxn: SwapTransaction = {
         data: Buffer.from(
           algosdk.encodeUnsignedTransaction(createMockTransaction()),
         ).toString('base64'),
@@ -1797,7 +1797,7 @@ describe('SwapComposer', () => {
 
       const composer = new SwapComposer({
         quote: createMockQuote() as FetchQuoteResponse,
-        swapTxns: [mockPreSignedDeflexTxn, mockUserDeflexTxn],
+        swapTxns: [mockPreSignedSwapTxn, mockUserSwapTxn],
         algodClient: mockAlgodClient,
         address: validAddress,
         signer: async (txns: algosdk.Transaction[]) =>
@@ -2023,7 +2023,7 @@ describe('SwapComposer', () => {
         logicSig,
       )
 
-      const mockPreSignedDeflexTxn: SwapTransaction = {
+      const mockPreSignedSwapTxn: SwapTransaction = {
         data: Buffer.from(
           algosdk.encodeUnsignedTransaction(preSignedTxn),
         ).toString('base64'),
@@ -2037,7 +2037,7 @@ describe('SwapComposer', () => {
         logicSigBlob: false,
       }
 
-      const mockUserDeflexTxn: SwapTransaction = {
+      const mockUserSwapTxn: SwapTransaction = {
         data: Buffer.from(
           algosdk.encodeUnsignedTransaction(createMockTransaction()),
         ).toString('base64'),
@@ -2048,7 +2048,7 @@ describe('SwapComposer', () => {
 
       const composer = new SwapComposer({
         quote: createMockQuote() as FetchQuoteResponse,
-        swapTxns: [mockPreSignedDeflexTxn, mockUserDeflexTxn],
+        swapTxns: [mockPreSignedSwapTxn, mockUserSwapTxn],
         algodClient: mockAlgodClient,
         address: validAddress,
         signer: async (txns: algosdk.Transaction[]) =>

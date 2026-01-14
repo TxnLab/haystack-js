@@ -1,12 +1,12 @@
 # Haystack Router SDK
 
 [![npm version](https://img.shields.io/npm/v/@txnlab/haystack-router.svg)](https://www.npmjs.com/package/@txnlab/haystack-router)
-[![bundle size](https://deno.bundlejs.com/badge?q=@txnlab/haystack-router@latest&treeshake=[*])](https://bundlejs.com/?q=%40txnlab%2Fdeflex%40latest&treeshake=%5B*%5D)
+[![bundle size](https://deno.bundlejs.com/badge?q=@txnlab/haystack-router@latest&treeshake=[*])](https://bundlejs.com/?q=%40txnlab%2Fhaystack-router%40latest&treeshake=%5B*%5D)
 [![CI](https://github.com/TxnLab/haystack-js/actions/workflows/ci.yml/badge.svg)](https://github.com/TxnLab/haystack-js/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
 
-TypeScript/JavaScript SDK for [Haystack Order Router](https://txnlab.gitbook.io/haystack-router-api) - smart order routing and DEX aggregation on Algorand.
+TypeScript/JavaScript SDK for [Haystack Order Router](https://txnlab.gitbook.io/deflex-api) - smart order routing and DEX aggregation on Algorand.
 
 ## Prerequisites
 
@@ -83,11 +83,11 @@ const router = new RouterClient({
 })
 ```
 
-By providing your Algorand address as the `referrerAddress` when initializing the client, you can earn 25% of the swap fees generated through your integration. Set the `feeBps` parameter to specify the total fee charged to users (default: 0.15%, max: 3.00%). Learn more about the [Haystack Router Referral Program](https://txnlab.gitbook.io/haystack-router-api/referral-treasury/referral-program).
+By providing your Algorand address as the `referrerAddress` when initializing the client, you can earn 25% of the swap fees generated through your integration. Set the `feeBps` parameter to specify the total fee charged to users (default: 0.15%, max: 3.00%). Learn more about the [Haystack Router Referral Program](https://txnlab.gitbook.io/deflex-api/referral-treasury/referral-program).
 
 ### Get a Swap Quote
 
-The [`newQuote()`](#deflexclientnewquote) method returns a [`SwapQuote`](#deflexquote) object:
+The [`newQuote()`](#routerclientnewquote) method returns a [`SwapQuote`](#swapquote) object:
 
 ```typescript
 // Basic quote
@@ -101,7 +101,7 @@ const quote = await router.newQuote({
 
 ### Execute a Swap
 
-The [`newSwap()`](#deflexclientnewswap) method returns a [`SwapComposer`](#swapcomposer) instance:
+The [`newSwap()`](#routerclientnewswap) method returns a [`SwapComposer`](#swapcomposer) instance:
 
 ```typescript
 import { useWallet } from '@txnlab/use-wallet-*' // react, vue, solid, or svelte
@@ -381,11 +381,11 @@ new RouterClient(config: ConfigParams)
 | `autoOptIn`       | Auto-detect and add required opt-in transactions             | `boolean`             | `false`                                |
 | `middleware`      | Array of middleware for custom asset requirements            | `SwapMiddleware[]`    | `[]`                                   |
 
-> **Referral Program**: By providing a `referrerAddress`, you can earn 25% of the swap fees generated through your integration. The `feeBps` parameter sets the total fee charged (default: 0.15%). Learn more about the [Haystack Router Referral Program](https://txnlab.gitbook.io/haystack-router-api/referral-treasury/referral-program).
+> **Referral Program**: By providing a `referrerAddress`, you can earn 25% of the swap fees generated through your integration. The `feeBps` parameter sets the total fee charged (default: 0.15%). Learn more about the [Haystack Router Referral Program](https://txnlab.gitbook.io/deflex-api/referral-treasury/referral-program).
 
 #### RouterClient.newQuote()
 
-Fetch a swap quote and return a [`SwapQuote`](#deflexquote) object.
+Fetch a swap quote and return a [`SwapQuote`](#swapquote) object.
 
 ```typescript
 async newQuote(params: FetchQuoteParams): Promise<SwapQuote>
@@ -434,7 +434,7 @@ async needsAssetOptIn(address: string, assetId: bigint | number): Promise<boolea
 
 ### SwapQuote
 
-Plain object returned by [`newQuote()`](#deflexclientnewquote). Extends the raw API response with additional metadata.
+Plain object returned by [`newQuote()`](#routerclientnewquote). Extends the raw API response with additional metadata.
 
 **Additional properties added by SDK:**
 
@@ -468,7 +468,7 @@ Plain object returned by [`newQuote()`](#deflexclientnewquote). Extends the raw 
 
 ### SwapComposer
 
-Builder for constructing and executing atomic swap transaction groups, returned by [`newSwap()`](#deflexclientnewswap).
+Builder for constructing and executing atomic swap transaction groups, returned by [`newSwap()`](#routerclientnewswap).
 
 | Method                                 | Description                                                                    | Parameters                                                     | Returns                                                                            |
 | -------------------------------------- | ------------------------------------------------------------------------------ | -------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
@@ -485,7 +485,7 @@ Builder for constructing and executing atomic swap transaction groups, returned 
 
 ## Documentation
 
-For more information about the Haystack Order Router protocol, visit the [official documentation](https://txnlab.gitbook.io/haystack-router-api).
+For more information about the Haystack Order Router protocol, visit the [official documentation](https://txnlab.gitbook.io/deflex-api).
 
 ## License
 

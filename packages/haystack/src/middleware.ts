@@ -46,7 +46,7 @@ export interface SwapContext {
 }
 
 /**
- * Middleware interface for extending Deflex swap functionality
+ * Middleware interface for extending Haystack Router swap functionality
  *
  * Middleware allows you to modify quote parameters and inject additional transactions
  * into the atomic swap group. This is useful for assets that require special handling,
