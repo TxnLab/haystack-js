@@ -6,7 +6,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
 
-TypeScript/JavaScript SDK for [Haystack Order Router](https://txnlab.gitbook.io/deflex-api) - smart order routing and DEX aggregation on Algorand.
+TypeScript/JavaScript SDK for [Haystack Order Router](https://txnlab.gitbook.io/haystack-router) - smart order routing and DEX aggregation on Algorand.
 
 ## Prerequisites
 
@@ -83,7 +83,7 @@ const router = new RouterClient({
 })
 ```
 
-By providing your Algorand address as the `referrerAddress` when initializing the client, you can earn 25% of the swap fees generated through your integration. Set the `feeBps` parameter to specify the total fee charged to users (default: 0.15%, max: 3.00%). Learn more about the [Haystack Router Referral Program](https://txnlab.gitbook.io/deflex-api/referral-treasury/referral-program).
+By providing your Algorand address as the `referrerAddress` when initializing the client, you can earn 25% of the swap fees generated through your integration. Set the `feeBps` parameter to specify the total fee charged to users (default: 0.15%, max: 3.00%). Learn more about the [Haystack Router Referral Program](https://txnlab.gitbook.io/haystack-router/referral-treasury/referral-program).
 
 ### Get a Swap Quote
 
@@ -381,7 +381,7 @@ new RouterClient(config: ConfigParams)
 | `autoOptIn`       | Auto-detect and add required opt-in transactions             | `boolean`             | `false`                                |
 | `middleware`      | Array of middleware for custom asset requirements            | `SwapMiddleware[]`    | `[]`                                   |
 
-> **Referral Program**: By providing a `referrerAddress`, you can earn 25% of the swap fees generated through your integration. The `feeBps` parameter sets the total fee charged (default: 0.15%). Learn more about the [Haystack Router Referral Program](https://txnlab.gitbook.io/deflex-api/referral-treasury/referral-program).
+> **Referral Program**: By providing a `referrerAddress`, you can earn 25% of the swap fees generated through your integration. The `feeBps` parameter sets the total fee charged (default: 0.15%). Learn more about the [Haystack Router Referral Program](https://txnlab.gitbook.io/haystack-router/referral-treasury/referral-program).
 
 #### RouterClient.newQuote()
 
@@ -485,7 +485,7 @@ Builder for constructing and executing atomic swap transaction groups, returned 
 
 ## Documentation
 
-For more information about the Haystack Order Router protocol, visit the [official documentation](https://txnlab.gitbook.io/deflex-api).
+For more information about the Haystack Order Router protocol, visit the [official documentation](https://txnlab.gitbook.io/haystack-router).
 
 ## License
 
