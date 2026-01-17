@@ -17,11 +17,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Generate release token
+        id: generate_token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.RELEASE_BOT_APP_ID }}
+          private-key: ${{ secrets.RELEASE_BOT_PRIVATE_KEY }}
+
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           persist-credentials: false
+          token: ${{ steps.generate_token.outputs.token }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -47,9 +55,9 @@ jobs:
 
       - name: Release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GIT_AUTHOR_NAME: github-actions[bot]
-          GIT_AUTHOR_EMAIL: github-actions[bot]@users.noreply.github.com
-          GIT_COMMITTER_NAME: github-actions[bot]
-          GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+          GIT_AUTHOR_NAME: TxnLab Release Bot[bot]
+          GIT_AUTHOR_EMAIL: txnlab-release-bot[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: TxnLab Release Bot[bot]
+          GIT_COMMITTER_EMAIL: txnlab-release-bot[bot]@users.noreply.github.com
         run: npx semantic-release
