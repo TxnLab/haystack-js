@@ -1,3 +1,10 @@
+## [2.0.4](https://github.com/TxnLab/haystack-js/compare/v2.0.3...v2.0.4) (2026-01-19)
+
+
+### Bug Fixes
+
+* **composer:** include transaction processing errors in debug logging ([#6](https://github.com/TxnLab/haystack-js/issues/6)) ([6992d83](https://github.com/TxnLab/haystack-js/commit/6992d8371644fe68a8850f778172a4cd369026da))
+
 ## [2.0.3](https://github.com/TxnLab/haystack-js/compare/v2.0.2...v2.0.3) (2026-01-14)
 
 
