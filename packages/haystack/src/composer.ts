@@ -453,12 +453,12 @@ export class SwapComposer {
     txIds: string[]
     methodResults: ABIResult[]
   }> {
-    // Auto-add swap transactions if needed (maintains backward compatibility)
-    if (!this.swapTransactionsAdded) {
-      await this.addSwapTransactions()
-    }
-
     try {
+      // Auto-add swap transactions if needed (maintains backward compatibility)
+      if (!this.swapTransactionsAdded) {
+        await this.addSwapTransactions()
+      }
+
       const { txIDs, ...result } = await this.atc.execute(
         this.algodClient,
         waitRounds,
