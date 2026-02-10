@@ -370,7 +370,7 @@ const middleware = new CustomAssetMiddleware({
 })
 
 const router = new RouterClient({
-  apiKey: 'your-api-key',
+  apiKey: '1b72df7e-1131-4449-8ce1-29b79dd3f51e', // Free tier (60 requests/min)
   middleware: [middleware],
 })
 

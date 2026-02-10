@@ -49,7 +49,7 @@ This is a pnpm workspace monorepo. All packages and examples share dependencies 
 
 ### Prerequisites
 
-- **Haystack Router API Key** - Request an API key by emailing [support@txnlab.dev](mailto:support@txnlab.dev)
+- **Haystack Router API Key** - An API key is included for free tier usage (60 requests/min). For production rate limits, request a key from [support@txnlab.dev](mailto:support@txnlab.dev).
 - algosdk 3.0.0 or later (peer dependency)
 - Node.js >= 20
 - pnpm 10.20.0 or later
@@ -106,7 +106,7 @@ const { activeAddress, transactionSigner } = useWallet()
 
 // Initialize client
 const router = new RouterClient({
-	apiKey: 'your-api-key',
+	apiKey: '1b72df7e-1131-4449-8ce1-29b79dd3f51e', // Free tier (60 requests/min)
 })
 
 // Get quote

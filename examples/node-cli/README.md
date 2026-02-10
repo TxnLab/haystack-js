@@ -12,7 +12,7 @@ This example demonstrates how to use the Haystack Router SDK in a Node.js comman
 
 ## Prerequisites
 
-- **Haystack Router API Key** - Request an API key by emailing [support@txnlab.dev](mailto:support@txnlab.dev)
+- **Haystack Router API Key** - A free tier key is included in `.env.example` (60 requests/min). For production rate limits, request a key from [support@txnlab.dev](mailto:support@txnlab.dev).
 - algosdk 3.0.0 or later (peer dependency)
 - Node.js >= 20
 - pnpm 10.20.0 or later
@@ -31,11 +31,11 @@ pnpm install
 cp .env.example .env
 ```
 
-3. Configure your `.env` file:
+3. Configure your `.env` file (the API key is pre-configured with the free tier):
 
 ```env
-# Required: Your Haystack Router API key
-HAYSTACK_ROUTER_API_KEY=your-api-key-here
+# Haystack Router API key - Free tier (60 requests/min)
+HAYSTACK_ROUTER_API_KEY=1b72df7e-1131-4449-8ce1-29b79dd3f51e
 
 # Required: Your 25-word account mnemonic
 # WARNING: Keep this file private and never commit it!

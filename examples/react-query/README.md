@@ -15,7 +15,7 @@ A React application demonstrating advanced Haystack Router SDK integration with 
 
 ## Prerequisites
 
-- **Haystack Router API Key** - Request an API key by emailing [support@txnlab.dev](mailto:support@txnlab.dev)
+- **Haystack Router API Key** - A free tier key is included in `.env.example` (60 requests/min). For production rate limits, request a key from [support@txnlab.dev](mailto:support@txnlab.dev).
 - Node.js >= 20
 - pnpm 10.20.0 or later
 
@@ -33,11 +33,7 @@ pnpm install
 cp .env.example .env
 ```
 
-3. Add your Haystack Router API key to the `.env` file:
-
-```
-VITE_HAYSTACK_ROUTER_API_KEY=your-api-key-here
-```
+3. The `.env` file comes pre-configured with the free tier API key. For production use, replace it with your dedicated key.
 
 ## Development
 
