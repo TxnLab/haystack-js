@@ -56,7 +56,7 @@ All examples use the local SDK package via pnpm workspaces. This means changes t
 
 ### Prerequisites
 
-- **Haystack Router API Key** - Request an API key by emailing [support@txnlab.dev](mailto:support@txnlab.dev)
+- **Haystack Router API Key** - A free tier key is included in the `.env.example` files (60 requests/min). For production rate limits, request a key from [support@txnlab.dev](mailto:support@txnlab.dev).
 - algosdk 3.0.0 or later (peer dependency)
 - Node.js >= 20
 - pnpm 10.20.0 or later
@@ -97,18 +97,18 @@ pnpm dev
 
 ## Configuration
 
-Each example requires a Haystack Router API key. Create a `.env` file in the example directory:
+Each example includes a `.env.example` file with the free tier API key pre-configured. Create a `.env` file in the example directory:
 
 ### React / React Query
 
 ```bash
-VITE_HAYSTACK_ROUTER_API_KEY=your-api-key-here
+VITE_HAYSTACK_ROUTER_API_KEY=1b72df7e-1131-4449-8ce1-29b79dd3f51e  # Free tier (60 requests/min)
 ```
 
 ### Node.js CLI
 
 ```bash
-HAYSTACK_ROUTER_API_KEY=your-api-key-here
+HAYSTACK_ROUTER_API_KEY=1b72df7e-1131-4449-8ce1-29b79dd3f51e  # Free tier (60 requests/min)
 ACCOUNT_MNEMONIC="your 25 word mnemonic phrase"
 ```
 

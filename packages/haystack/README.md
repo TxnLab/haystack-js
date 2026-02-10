@@ -10,8 +10,15 @@ TypeScript/JavaScript SDK for [Haystack Order Router](https://txnlab.gitbook.io/
 
 ## Prerequisites
 
-- **Haystack Router API Key** - Request an API key by emailing [support@txnlab.dev](mailto:support@txnlab.dev)
+- **Haystack Router API Key** - A free tier key is included below for development and testing (60 requests/min). For production rate limits, request a dedicated key from [support@txnlab.dev](mailto:support@txnlab.dev).
 - algosdk 3.0.0 or later
+
+### API Key Tiers
+
+| Tier | Key | Rate Limit | Use Case |
+| --- | --- | --- | --- |
+| **Free** | `1b72df7e-1131-4449-8ce1-29b79dd3f51e` | 60 requests/min | Development, testing, low-volume integrations |
+| **Production** | Request from [support@txnlab.dev](mailto:support@txnlab.dev) | Higher limits | Production applications |
 
 ## Installation
 
@@ -31,7 +38,7 @@ const { activeAddress, transactionSigner } = useWallet()
 
 // Initialize the client
 const router = new RouterClient({
-  apiKey: 'your-api-key',
+  apiKey: '1b72df7e-1131-4449-8ce1-29b79dd3f51e', // Free tier (60 requests/min)
 })
 
 // Get a quote
@@ -63,12 +70,12 @@ import { RouterClient } from '@txnlab/haystack-router'
 
 // Basic initialization
 const router = new RouterClient({
-  apiKey: 'your-api-key',
+  apiKey: '1b72df7e-1131-4449-8ce1-29b79dd3f51e', // Free tier (60 requests/min)
 })
 
 // Custom Algod configuration
 const router = new RouterClient({
-  apiKey: 'your-api-key',
+  apiKey: '1b72df7e-1131-4449-8ce1-29b79dd3f51e', // Free tier (60 requests/min)
   algodUri: 'https://mainnet-api.4160.nodely.dev/',
   algodToken: '',
   algodPort: 443,
@@ -77,7 +84,7 @@ const router = new RouterClient({
 
 // Earn fees with the referral program
 const router = new RouterClient({
-  apiKey: 'your-api-key',
+  apiKey: '1b72df7e-1131-4449-8ce1-29b79dd3f51e', // Free tier (60 requests/min)
   referrerAddress: 'YOUR_ALGORAND_ADDRESS', // Earns 25% of swap fees
   feeBps: 15, // 0.15% fee (max: 300 = 3%)
 })
@@ -265,7 +272,7 @@ const firstStage = new FirstStageMiddleware({
 
 // Pass middleware to RouterClient
 const router = new RouterClient({
-  apiKey: 'your-api-key',
+  apiKey: '1b72df7e-1131-4449-8ce1-29b79dd3f51e', // Free tier (60 requests/min)
   middleware: [firstStage], // Middleware is applied automatically
 })
 
@@ -293,7 +300,7 @@ const autoOptOut = new AutoOptOutMiddleware({
 })
 
 const router = new RouterClient({
-  apiKey: 'your-api-key',
+  apiKey: '1b72df7e-1131-4449-8ce1-29b79dd3f51e', // Free tier (60 requests/min)
   middleware: [autoOptOut],
 })
 
@@ -314,7 +321,7 @@ If you're not using `autoOptIn: true`, you can manually check if opt-in is neede
 
 ```typescript
 const router = new RouterClient({
-  apiKey: 'your-api-key',
+  apiKey: '1b72df7e-1131-4449-8ce1-29b79dd3f51e', // Free tier (60 requests/min)
   autoOptIn: false, // Default if not provided
 })
 

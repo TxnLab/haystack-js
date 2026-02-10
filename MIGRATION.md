@@ -42,7 +42,7 @@ const deflex = new DeflexClient({
 
 // After
 const router = new RouterClient({
-  apiKey: 'your-api-key'
+  apiKey: '1b72df7e-1131-4449-8ce1-29b79dd3f51e' // Free tier (60 requests/min)
 })
 ```
 
@@ -162,8 +162,8 @@ DEFLEX_API_KEY=your-api-key
 VITE_DEFLEX_API_KEY=your-api-key
 
 # After
-HAYSTACK_ROUTER_API_KEY=your-api-key
-VITE_HAYSTACK_ROUTER_API_KEY=your-api-key
+HAYSTACK_ROUTER_API_KEY=1b72df7e-1131-4449-8ce1-29b79dd3f51e
+VITE_HAYSTACK_ROUTER_API_KEY=1b72df7e-1131-4449-8ce1-29b79dd3f51e
 ```
 
 ## No Functional Changes
