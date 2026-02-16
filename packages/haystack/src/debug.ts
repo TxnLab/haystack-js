@@ -33,9 +33,7 @@ export function logSwapExecutionFailure(
       toASAID: context.quote.toASAID,
       type: context.quote.type,
       amount:
-        'amount' in context.quote
-          ? context.quote.amount.toString()
-          : undefined,
+        'amount' in context.quote ? context.quote.amount.toString() : undefined,
       quote: context.quote.quote.toString(),
       requiredAppOptIns: context.quote.requiredAppOptIns,
       route: context.quote.route?.map((r) => ({
