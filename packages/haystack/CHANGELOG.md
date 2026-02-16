@@ -1,3 +1,10 @@
+## [2.0.5](https://github.com/TxnLab/haystack-js/compare/v2.0.4...v2.0.5) (2026-02-16)
+
+
+### Bug Fixes
+
+* **debug:** include request amount in swap failure logs ([#9](https://github.com/TxnLab/haystack-js/issues/9)) ([ce14f63](https://github.com/TxnLab/haystack-js/commit/ce14f6335c200a89e495f4455bb974e52a624cd4))
+
 ## [2.0.4](https://github.com/TxnLab/haystack-js/compare/v2.0.3...v2.0.4) (2026-01-19)
 
 

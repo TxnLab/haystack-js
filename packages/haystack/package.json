@@ -1,6 +1,6 @@
 {
   "name": "@txnlab/haystack-router",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "TypeScript/JavaScript SDK for Haystack Order Router - smart order routing and DEX aggregation on Algorand",
   "keywords": [
     "algorand",
