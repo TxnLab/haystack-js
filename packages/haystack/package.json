@@ -59,7 +59,7 @@
     "@vitest/coverage-v8": "4.1.4",
     "algosdk": "3.5.2",
     "publint": "0.3.18",
-    "tsdown": "0.21.8",
+    "tsdown": "0.21.9",
     "typescript": "5.9.3",
     "vitest": "4.1.4"
   },
