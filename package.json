@@ -9,7 +9,7 @@
   "license": "MIT",
   "author": "Doug Richar <doug@txnlab.dev> (https://txnlab.dev)",
   "type": "module",
-  "packageManager": "pnpm@10.33.0",
+  "packageManager": "pnpm@10.33.2",
   "engines": {
     "node": ">=20"
   },
