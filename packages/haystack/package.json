@@ -56,12 +56,12 @@
   },
   "devDependencies": {
     "@types/node": "22.19.19",
-    "@vitest/coverage-v8": "4.1.7",
+    "@vitest/coverage-v8": "4.1.8",
     "algosdk": "3.5.2",
     "publint": "0.3.21",
-    "tsdown": "0.22.0",
+    "tsdown": "0.22.1",
     "typescript": "5.9.3",
-    "vitest": "4.1.7"
+    "vitest": "4.1.8"
   },
   "peerDependencies": {
     "algosdk": "^3.0.0"
