@@ -55,13 +55,13 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "@types/node": "22.19.20",
-    "@vitest/coverage-v8": "4.1.8",
-    "algosdk": "3.5.2",
-    "publint": "0.3.21",
-    "tsdown": "0.22.2",
+    "@types/node": "22.20.1",
+    "@vitest/coverage-v8": "4.1.11",
+    "algosdk": "3.7.0",
+    "publint": "0.3.24",
+    "tsdown": "0.23.0",
     "typescript": "5.9.3",
-    "vitest": "4.1.8"
+    "vitest": "4.1.11"
   },
   "peerDependencies": {
     "algosdk": "^3.0.0"
