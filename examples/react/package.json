@@ -12,7 +12,7 @@
     "@perawallet/connect": "^1.4.2",
     "@txnlab/haystack-router": "workspace:*",
     "@txnlab/use-wallet-react": "^4.3.1",
-    "algosdk": "^3.5.2",
+    "algosdk": "^3.9.0",
     "lute-connect": "^1.6.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"

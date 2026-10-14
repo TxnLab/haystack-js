@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@txnlab/haystack-router": "workspace:*",
-    "algosdk": "^3.5.2",
+    "algosdk": "^3.9.0",
     "dotenv": "^16.4.7"
   },
   "devDependencies": {
