@@ -45,8 +45,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/haystack
       algosdk:
-        specifier: ^3.5.2
-        version: 3.5.2
+        specifier: ^3.9.0
+        version: 3.9.0
       dotenv:
         specifier: ^16.4.7
         version: 16.6.1
@@ -62,19 +62,19 @@ importers:
     dependencies:
       '@blockshake/defly-connect':
         specifier: ^1.2.1
-        version: 1.2.1(algosdk@3.5.2)
+        version: 1.2.1(algosdk@3.9.0)
       '@perawallet/connect':
         specifier: ^1.4.2
-        version: 1.4.2(algosdk@3.5.2)
+        version: 1.4.2(algosdk@3.9.0)
       '@txnlab/haystack-router':
         specifier: workspace:*
         version: link:../../packages/haystack
       '@txnlab/use-wallet-react':
         specifier: ^4.3.1
-        version: 4.3.1(@blockshake/defly-connect@1.2.1(algosdk@3.5.2))(@perawallet/connect@1.4.2(algosdk@3.5.2))(algosdk@3.5.2)(lute-connect@1.6.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 4.3.1(@blockshake/defly-connect@1.2.1(algosdk@3.9.0))(@perawallet/connect@1.4.2(algosdk@3.9.0))(algosdk@3.9.0)(lute-connect@1.6.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       algosdk:
-        specifier: ^3.5.2
-        version: 3.5.2
+        specifier: ^3.9.0
+        version: 3.9.0
       lute-connect:
         specifier: ^1.6.3
         version: 1.6.3
@@ -108,10 +108,10 @@ importers:
     dependencies:
       '@blockshake/defly-connect':
         specifier: ^1.2.1
-        version: 1.2.1(algosdk@3.5.2)
+        version: 1.2.1(algosdk@3.9.0)
       '@perawallet/connect':
         specifier: ^1.4.2
-        version: 1.4.2(algosdk@3.5.2)
+        version: 1.4.2(algosdk@3.9.0)
       '@tanstack/react-query':
         specifier: ^5.62.14
         version: 5.90.5(react@18.3.1)
@@ -120,10 +120,10 @@ importers:
         version: link:../../packages/haystack
       '@txnlab/use-wallet-react':
         specifier: ^4.3.1
-        version: 4.3.1(@blockshake/defly-connect@1.2.1(algosdk@3.5.2))(@perawallet/connect@1.4.2(algosdk@3.5.2))(algosdk@3.5.2)(lute-connect@1.6.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 4.3.1(@blockshake/defly-connect@1.2.1(algosdk@3.9.0))(@perawallet/connect@1.4.2(algosdk@3.9.0))(algosdk@3.9.0)(lute-connect@1.6.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       algosdk:
-        specifier: ^3.5.2
-        version: 3.5.2
+        specifier: ^3.9.0
+        version: 3.9.0
       lute-connect:
         specifier: ^1.6.3
         version: 1.6.3
@@ -1507,10 +1507,6 @@ packages:
   algorand-msgpack@1.1.0:
     resolution: {integrity: sha512-08k7pBQnkaUB5p+jL7f1TRaUIlTSDE0cesFu1mD7llLao+1cAhtvvZmGE3OnisTd0xOn118QMw74SRqddqaYvw==}
     engines: {node: '>= 14'}
-
-  algosdk@3.5.2:
-    resolution: {integrity: sha512-frhGtZl1JvfrLRKmMvUm880wj4OiWsWo2FhbreNWh7pdFsKuWPj60fV682wt/CYefLI70iwHavPOwGBkTVt0VA==}
-    engines: {node: '>=18.0.0'}
 
   algosdk@3.9.0:
     resolution: {integrity: sha512-v6DoM9UNWVmoKAhF9a/jQa6TnvCB5kf+lDlURdS3Qn1gLGxmEtkLmW5aUzBzgJXp18euvm8eS/0bNYFdB9bcVQ==}
@@ -3950,12 +3946,12 @@ snapshots:
 
   '@bcoe/v8-coverage@1.0.2': {}
 
-  '@blockshake/defly-connect@1.2.1(algosdk@3.5.2)':
+  '@blockshake/defly-connect@1.2.1(algosdk@3.9.0)':
     dependencies:
       '@likecoin/qr-code-styling': 1.6.6
       '@walletconnect/client': 1.8.0
       '@walletconnect/types': 1.8.0
-      algosdk: 3.5.2
+      algosdk: 3.9.0
       bowser: 2.11.0
       buffer: 6.0.3
       lottie-web: 5.13.0
@@ -4226,12 +4222,12 @@ snapshots:
 
   '@oxc-project/types@0.154.0': {}
 
-  '@perawallet/connect@1.4.2(algosdk@3.5.2)':
+  '@perawallet/connect@1.4.2(algosdk@3.9.0)':
     dependencies:
       '@evanhahn/lottie-web-light': 5.8.1
       '@walletconnect/client': 1.8.0
       '@walletconnect/types': 1.8.0
-      algosdk: 3.5.2
+      algosdk: 3.9.0
       bowser: 2.11.0
       buffer: 6.0.3
       qr-code-styling: 1.6.0-rc.1
@@ -4575,27 +4571,27 @@ snapshots:
 
   '@tanstack/store@0.7.2': {}
 
-  '@txnlab/use-wallet-react@4.3.1(@blockshake/defly-connect@1.2.1(algosdk@3.5.2))(@perawallet/connect@1.4.2(algosdk@3.5.2))(algosdk@3.5.2)(lute-connect@1.6.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@txnlab/use-wallet-react@4.3.1(@blockshake/defly-connect@1.2.1(algosdk@3.9.0))(@perawallet/connect@1.4.2(algosdk@3.9.0))(algosdk@3.9.0)(lute-connect@1.6.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@tanstack/react-store': 0.7.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@txnlab/use-wallet': 4.3.1(@blockshake/defly-connect@1.2.1(algosdk@3.5.2))(@perawallet/connect@1.4.2(algosdk@3.5.2))(algosdk@3.5.2)(lute-connect@1.6.3)
-      algosdk: 3.5.2
+      '@txnlab/use-wallet': 4.3.1(@blockshake/defly-connect@1.2.1(algosdk@3.9.0))(@perawallet/connect@1.4.2(algosdk@3.9.0))(algosdk@3.9.0)(lute-connect@1.6.3)
+      algosdk: 3.9.0
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
     optionalDependencies:
-      '@blockshake/defly-connect': 1.2.1(algosdk@3.5.2)
-      '@perawallet/connect': 1.4.2(algosdk@3.5.2)
+      '@blockshake/defly-connect': 1.2.1(algosdk@3.9.0)
+      '@perawallet/connect': 1.4.2(algosdk@3.9.0)
       lute-connect: 1.6.3
     transitivePeerDependencies:
       - '@agoralabs-sh/avm-web-provider'
 
-  '@txnlab/use-wallet@4.3.1(@blockshake/defly-connect@1.2.1(algosdk@3.5.2))(@perawallet/connect@1.4.2(algosdk@3.5.2))(algosdk@3.5.2)(lute-connect@1.6.3)':
+  '@txnlab/use-wallet@4.3.1(@blockshake/defly-connect@1.2.1(algosdk@3.9.0))(@perawallet/connect@1.4.2(algosdk@3.9.0))(algosdk@3.9.0)(lute-connect@1.6.3)':
     dependencies:
       '@tanstack/store': 0.7.2
-      algosdk: 3.5.2
+      algosdk: 3.9.0
     optionalDependencies:
-      '@blockshake/defly-connect': 1.2.1(algosdk@3.5.2)
-      '@perawallet/connect': 1.4.2(algosdk@3.5.2)
+      '@blockshake/defly-connect': 1.2.1(algosdk@3.9.0)
+      '@perawallet/connect': 1.4.2(algosdk@3.9.0)
       lute-connect: 1.6.3
 
   '@tybys/wasm-util@0.10.1':
@@ -5042,17 +5038,6 @@ snapshots:
       uri-js: 4.4.1
 
   algorand-msgpack@1.1.0: {}
-
-  algosdk@3.5.2:
-    dependencies:
-      algorand-msgpack: 1.1.0
-      hi-base32: 0.5.1
-      js-sha256: 0.9.0
-      js-sha3: 0.8.0
-      js-sha512: 0.8.0
-      json-bigint: 1.0.0
-      tweetnacl: 1.0.3
-      vlq: 2.0.4
 
   algosdk@3.9.0:
     dependencies:
