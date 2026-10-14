@@ -8,7 +8,7 @@ A React application demonstrating advanced Haystack Router SDK integration with 
 - **Fresh quotes** - Quotes automatically refetch every 15 seconds
 - **React Query integration** - Uses `useQuery` for quotes and `useMutation` for swaps
 - **Multiple wallet support** (Pera, Defly, Lute)
-- **Modern wallet UI** with `@txnlab/use-wallet-react` v4
+- **Modern wallet UI** with `@txnlab/use-wallet-react` v5
 - **Real-time updates** - No "Get Quote" button needed
 - **Execute swaps** with slippage protection
 - **Display quote details** and routing information
@@ -16,7 +16,7 @@ A React application demonstrating advanced Haystack Router SDK integration with 
 ## Prerequisites
 
 - **Haystack Router API Key** - A free tier key is included in `.env.example` (60 requests/min). For production rate limits, request a key from [support@txnlab.dev](mailto:support@txnlab.dev).
-- Node.js >= 20
+- Node.js >= 22
 - pnpm 10.20.0 or later
 
 ## Setup
@@ -127,16 +127,17 @@ const swapMutation = useMutation({
 The example is configured with multiple wallet providers in [src/main.tsx](./src/main.tsx):
 
 ```typescript
+import { defly } from '@txnlab/use-wallet-defly'
+import { pera } from '@txnlab/use-wallet-pera'
+import { lute } from '@galaxypay/use-wallet-lute'
+
 const walletManager = new WalletManager({
-	wallets: [WalletId.DEFLY, WalletId.PERA, WalletId.LUTE],
+	wallets: [defly(), pera(), lute()],
 	defaultNetwork: 'mainnet',
-	options: {
-		resetNetwork: true,
-	},
 });
 ```
 
-You can customize which wallets are available by modifying this configuration.
+Each wallet comes from its own adapter package. To change which wallets are available, add or remove adapter packages and update this list.
 
 ## Notes
 

@@ -10,7 +10,7 @@ A simple React application demonstrating basic Haystack Router SDK integration.
 
 **Key Features:**
 
-- React 18 with TypeScript and Vite
+- React 19 with TypeScript and Vite
 - Multiple wallet support (Pera, Defly, Lute)
 - Complete swap interface with quote display
 
@@ -58,7 +58,7 @@ All examples use the local SDK package via pnpm workspaces. This means changes t
 
 - **Haystack Router API Key** - A free tier key is included in the `.env.example` files (60 requests/min). For production rate limits, request a key from [support@txnlab.dev](mailto:support@txnlab.dev).
 - algosdk 3.0.0 or later (peer dependency)
-- Node.js >= 20
+- Node.js >= 22
 - pnpm 10.20.0 or later
 
 ### Installation

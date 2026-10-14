@@ -761,8 +761,7 @@ describe('RouterClient', () => {
       expect(mockRequest).toHaveBeenCalledOnce()
 
       const [url, options] = mockRequest.mock.calls?.[0] as
-        | [string, RequestInit]
-        | []
+        [string, RequestInit] | []
       expect(url).toContain('fetchExecuteSwapTxns')
       expect(options?.method).toBe('POST')
       expect(options?.headers).toEqual({ 'Content-Type': 'application/json' })

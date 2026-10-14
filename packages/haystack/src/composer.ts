@@ -653,6 +653,7 @@ export class SwapComposer {
       } catch (error) {
         throw new Error(
           `Failed to process swap transaction at index ${i}: ${error instanceof Error ? error.message : String(error)}`,
+          { cause: error },
         )
       }
     }
@@ -783,6 +784,7 @@ export class SwapComposer {
     } catch (error) {
       throw new Error(
         `Failed to re-sign transaction: ${error instanceof Error ? error.message : String(error)}`,
+        { cause: error },
       )
     }
   }
