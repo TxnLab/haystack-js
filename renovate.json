@@ -6,7 +6,15 @@
     ":semanticCommits",
     ":preserveSemverRanges"
   ],
+  "minimumReleaseAge": "2 days",
   "packageRules": [
+    {
+      "description": "Bump algosdk ranges in examples so they stay in lockstep with the SDK's pinned devDependency",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["algosdk"],
+      "matchDepTypes": ["dependencies", "devDependencies"],
+      "rangeStrategy": "bump"
+    },
     {
       "description": "Group GitHub Actions updates",
       "matchManagers": ["github-actions"],
