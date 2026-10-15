@@ -1063,4 +1063,306 @@ describe('RouterClient', () => {
       expect(typeof composer.getStatus).toBe('function')
     })
   })
+
+  describe('launch token quotes', () => {
+    let client: RouterClient
+    let mockRequest: ReturnType<typeof vi.fn>
+
+    const validAddress =
+      '5BPCE3UNCPAIONAOMY4CVUXNU27SOCXYE4QSXEQFYXV6ORFQIKVTOR6ZTM'
+
+    const launchQuote: Partial<FetchQuoteResponse> = {
+      fromASAID: 31566704,
+      toASAID: 3454502531,
+      quote: 5607413404650,
+      type: 'fixed-input',
+      route: [],
+      txnPayload: { iv: 'test-iv', data: 'test-data' },
+      requiredAppOptIns: [],
+      launch: {
+        side: 'buy',
+        tokenNum: 1,
+        bondingTokenId: 0,
+        bondingSurplus: 867251,
+      },
+    }
+
+    const swapResponse = (): FetchSwapTxnsResponse => ({
+      txns: [
+        {
+          data: Buffer.from(
+            algosdk.encodeUnsignedTransaction(
+              algosdk.makePaymentTxnWithSuggestedParamsFromObject({
+                sender: validAddress,
+                receiver: validAddress,
+                amount: 1000,
+                suggestedParams: {
+                  fee: 1000,
+                  firstValid: 1000,
+                  lastValid: 2000,
+                  genesisID: 'testnet-v1.0',
+                  genesisHash: Buffer.from(
+                    'SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=',
+                    'base64',
+                  ),
+                  minFee: 1000,
+                },
+              }),
+            ),
+          ).toString('base64'),
+          group: '',
+          logicSigBlob: false,
+          signature: false,
+        },
+      ],
+    })
+
+    beforeEach(async () => {
+      client = new RouterClient(validConfig)
+      const requestModule = vi.mocked(await import('../src/utils'), {
+        partial: true,
+      })
+      mockRequest = requestModule.request as ReturnType<typeof vi.fn>
+      mockRequest.mockReset()
+    })
+
+    it('should send slippage with the quote request when provided', async () => {
+      mockRequest.mockResolvedValue(launchQuote)
+
+      await client.fetchQuote({
+        fromASAID: 31566704,
+        toASAID: 3454502531,
+        amount: 10_000_000,
+        slippage: 1.5,
+      })
+
+      const callUrl = mockRequest.mock.calls?.[0]?.[0] as string
+      expect(new URL(callUrl).searchParams.get('slippage')).toBe('1.5')
+    })
+
+    it('should not send slippage when it is not provided', async () => {
+      mockRequest.mockResolvedValue(launchQuote)
+
+      await client.fetchQuote({
+        fromASAID: 0,
+        toASAID: 31566704,
+        amount: 1_000_000,
+      })
+
+      const callUrl = mockRequest.mock.calls?.[0]?.[0] as string
+      expect(new URL(callUrl).searchParams.has('slippage')).toBe(false)
+    })
+
+    it('should send zero slippage', async () => {
+      mockRequest.mockResolvedValue(launchQuote)
+
+      await client.fetchQuote({
+        fromASAID: 0,
+        toASAID: 31566704,
+        amount: 1_000_000,
+        slippage: 0,
+      })
+
+      const callUrl = mockRequest.mock.calls?.[0]?.[0] as string
+      expect(new URL(callUrl).searchParams.get('slippage')).toBe('0')
+    })
+
+    it.each([-0.1, 100, 150, Number.NaN, Number.POSITIVE_INFINITY])(
+      'should reject slippage %s before calling the API',
+      async (slippage) => {
+        await expect(
+          client.fetchQuote({
+            fromASAID: 0,
+            toASAID: 31566704,
+            amount: 1_000_000,
+            slippage,
+          }),
+        ).rejects.toThrow('Invalid slippage')
+        expect(mockRequest).not.toHaveBeenCalled()
+      },
+    )
+
+    it('should normalize the launch object and record slippage in newQuote', async () => {
+      mockRequest.mockResolvedValue(launchQuote)
+
+      const quote = await client.newQuote({
+        fromASAID: 31566704,
+        toASAID: 3454502531,
+        amount: 10_000_000,
+        slippage: 1,
+      })
+
+      expect(quote.quote).toBe(5607413404650n)
+      expect(quote.slippage).toBe(1)
+      expect(quote.launch).toEqual({
+        side: 'buy',
+        tokenNum: 1,
+        bondingTokenId: 0,
+        bondingSurplus: 867251n,
+        refund: 0n,
+        graduates: false,
+      })
+    })
+
+    it('should carry the refund of a buy that completes bonding', async () => {
+      mockRequest.mockResolvedValue({
+        ...launchQuote,
+        launch: { ...launchQuote.launch, refund: 2500000, graduates: true },
+      })
+
+      const quote = await client.newQuote({
+        fromASAID: 31566704,
+        toASAID: 3454502531,
+        amount: 10_000_000,
+      })
+
+      expect(quote.launch?.refund).toBe(2500000n)
+      expect(quote.launch?.graduates).toBe(true)
+    })
+
+    it('should leave launch undefined for a regular quote', async () => {
+      mockRequest.mockResolvedValue({ ...launchQuote, launch: undefined })
+
+      const quote = await client.newQuote({
+        fromASAID: 31566704,
+        toASAID: 0,
+        amount: 10_000_000,
+      })
+
+      expect(quote.launch).toBeUndefined()
+    })
+
+    it('should warn when a launch quote is executed at a different slippage', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      mockRequest.mockResolvedValueOnce(launchQuote)
+      const quote = await client.newQuote({
+        fromASAID: 31566704,
+        toASAID: 3454502531,
+        amount: 10_000_000,
+        slippage: 1,
+      })
+
+      mockRequest.mockResolvedValueOnce(swapResponse())
+      await client.newSwap({
+        quote,
+        address: validAddress,
+        slippage: 2,
+        signer: async (txns: algosdk.Transaction[]) =>
+          txns.map(() => new Uint8Array(0)),
+      })
+
+      expect(warn).toHaveBeenCalledOnce()
+      expect(warn.mock.calls[0]?.[0]).toContain('fetched with 1% slippage')
+      warn.mockRestore()
+    })
+
+    it('should warn when a launch quote was fetched without slippage', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      mockRequest.mockResolvedValueOnce(launchQuote)
+      const quote = await client.newQuote({
+        fromASAID: 31566704,
+        toASAID: 3454502531,
+        amount: 10_000_000,
+      })
+
+      mockRequest.mockResolvedValueOnce(swapResponse())
+      await client.newSwap({
+        quote,
+        address: validAddress,
+        slippage: 1,
+        signer: async (txns: algosdk.Transaction[]) =>
+          txns.map(() => new Uint8Array(0)),
+      })
+
+      expect(warn).toHaveBeenCalledOnce()
+      expect(warn.mock.calls[0]?.[0]).toContain('fetched without slippage')
+      warn.mockRestore()
+    })
+
+    it('should not warn for a raw launch quote, whose slippage is unknown', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      mockRequest.mockResolvedValueOnce(swapResponse())
+
+      await client.newSwap({
+        quote: launchQuote as FetchQuoteResponse,
+        address: validAddress,
+        slippage: 5,
+        signer: async (txns: algosdk.Transaction[]) =>
+          txns.map(() => new Uint8Array(0)),
+      })
+
+      expect(warn).not.toHaveBeenCalled()
+      warn.mockRestore()
+    })
+
+    it('should not warn when a launch quote is executed at the same slippage', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      mockRequest.mockResolvedValueOnce(launchQuote)
+      const quote = await client.newQuote({
+        fromASAID: 31566704,
+        toASAID: 3454502531,
+        amount: 10_000_000,
+        slippage: 1,
+      })
+
+      mockRequest.mockResolvedValueOnce(swapResponse())
+      await client.newSwap({
+        quote,
+        address: validAddress,
+        slippage: 1,
+        signer: async (txns: algosdk.Transaction[]) =>
+          txns.map(() => new Uint8Array(0)),
+      })
+
+      expect(warn).not.toHaveBeenCalled()
+      warn.mockRestore()
+    })
+
+    it('should not warn for a regular quote executed at any slippage', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      mockRequest.mockResolvedValueOnce({ ...launchQuote, launch: undefined })
+      const quote = await client.newQuote({
+        fromASAID: 31566704,
+        toASAID: 0,
+        amount: 10_000_000,
+      })
+
+      mockRequest.mockResolvedValueOnce(swapResponse())
+      await client.newSwap({
+        quote,
+        address: validAddress,
+        slippage: 1,
+        signer: async (txns: algosdk.Transaction[]) =>
+          txns.map(() => new Uint8Array(0)),
+      })
+
+      expect(warn).not.toHaveBeenCalled()
+      warn.mockRestore()
+    })
+
+    it('should record the slippage set by middleware', async () => {
+      const middlewareClient = new RouterClient({
+        ...validConfig,
+        middleware: [
+          {
+            name: 'SetSlippage',
+            version: '1.0.0',
+            shouldApply: async () => true,
+            adjustQuoteParams: async (params) => ({ ...params, slippage: 2 }),
+          },
+        ],
+      })
+      mockRequest.mockResolvedValue(launchQuote)
+
+      const quote = await middlewareClient.newQuote({
+        fromASAID: 31566704,
+        toASAID: 3454502531,
+        amount: 10_000_000,
+      })
+
+      expect(quote.slippage).toBe(2)
+      const callUrl = mockRequest.mock.calls?.[0]?.[0] as string
+      expect(new URL(callUrl).searchParams.get('slippage')).toBe('2')
+    })
+  })
 })

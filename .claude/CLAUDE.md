@@ -31,7 +31,7 @@ pnpm --filter "./examples/**" run build
 
 ## Architecture
 
-The public API is whatever `src/index.ts` re-exports: client, composer, constants, middleware, types, utils. `logger.ts` and `debug.ts` are internal.
+The public API is whatever `src/index.ts` re-exports: client, composer, constants, middleware, types, utils. `logger.ts`, `debug.ts` and `launch.ts` are internal.
 
 ### Swap flow
 
@@ -42,7 +42,8 @@ The public API is whatever `src/index.ts` re-exports: client, composer, constant
 
 ### Signing
 
-- An API swap txn with `signature: false` is the user's input payment or axfer. It gets the configured signer and the optional `note`, and its group index is tracked for `getInputTransactionId()`.
+- API swap txns with `signature: false` get the configured signer. The swap's input is the one that pays or transfers to the router app's address, found from the router's pre-signed app calls (falling back to the last user-signed txn). Only that txn gets the optional `note`, and its group index is tracked for `getInputTransactionId()`. Launch swaps have several user-signed txns, and their two `gas()` calls differ only by note.
+- Launch-token swaps (`quote.launch`): the user-signed HayLaunch curve call is found by ABI selector (`launchCurveSide()` in `composer.ts`). A buy's output is the curve call's ARC-4 uint64 return, not an inner transfer; a sell's input is the `tokensToSell` app arg.
 - Every other API txn carries a logic-sig or secret-key `signature` and is re-signed locally by `createSwapSigner()`. The API's group ID is stripped and reassigned by the ATC.
 - The user signer can be an `algosdk.TransactionSigner` or an ARC-1 `SignerFunction`. `defaultSigner` filters out the `null`s that ARC-1 wallets return.
 

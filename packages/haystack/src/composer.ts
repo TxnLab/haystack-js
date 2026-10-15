@@ -1,6 +1,8 @@
 import {
   AtomicTransactionComposer,
+  decodeUint64,
   decodeUnsignedTransaction,
+  getApplicationAddress,
   isValidAddress,
   LogicSigAccount,
   makeApplicationOptInTxnFromObject,
@@ -8,12 +10,14 @@ import {
   signLogicSigTransactionObject,
   signTransaction,
   Transaction,
+  TransactionType,
   type ABIResult,
   type Algodv2,
   type TransactionSigner,
   type TransactionWithSigner,
 } from 'algosdk'
 import { DEFAULT_CONFIRMATION_ROUNDS } from './constants'
+import { toSwapLaunchQuote } from './launch'
 import { Logger } from './logger'
 import type { SwapMiddleware, SwapContext, QuoteContext } from './middleware'
 import type {
@@ -25,6 +29,51 @@ import type {
   QuoteType,
   SwapSummary,
 } from './types'
+
+/** ABI selectors of the HayLaunch bonding-curve buy methods (buyWithLimit, buyWithAlgoWithLimit) */
+const LAUNCH_BUY_SELECTORS = new Set(['9068a8d9', 'b0e30517'])
+
+/** ABI selector of the HayLaunch bonding-curve sell method (sellWithLimit) */
+const LAUNCH_SELL_SELECTOR = '028a0647'
+
+/** Prefix of the log that carries an ARC-4 method's return value */
+const ARC4_RETURN_PREFIX = '151f7c75'
+
+/** A swap transaction from the API, decoded */
+interface DecodedSwapTransaction {
+  txn: Transaction
+  signature: Signature | false
+}
+
+/**
+ * Returns which side of a HayLaunch bonding-curve trade an app call is, or
+ * undefined if it isn't a curve buy or sell call
+ */
+function launchCurveSide(txn: Transaction): 'buy' | 'sell' | undefined {
+  const selector = txn.applicationCall?.appArgs[0]
+  if (txn.type !== TransactionType.appl || !selector) return undefined
+
+  const hex = Buffer.from(selector).toString('hex')
+  if (LAUNCH_BUY_SELECTORS.has(hex)) return 'buy'
+  if (hex === LAUNCH_SELL_SELECTOR) return 'sell'
+  return undefined
+}
+
+/**
+ * Reads a uint64 ARC-4 return value from an app call's logs (the last log,
+ * prefixed with 151f7c75)
+ */
+function readUint64Return(logs: Uint8Array[] | undefined): bigint | undefined {
+  const log = logs?.[logs.length - 1]
+  if (
+    !log ||
+    log.length !== 12 ||
+    Buffer.from(log.subarray(0, 4)).toString('hex') !== ARC4_RETURN_PREFIX
+  ) {
+    return undefined
+  }
+  return decodeUint64(log.subarray(4), 'bigint')
+}
 
 /**
  * A transaction signer function that supports both standard algosdk.TransactionSigner
@@ -119,6 +168,7 @@ export class SwapComposer {
   private readonly note?: Uint8Array
   private inputTransactionIndex?: number
   private outputTransactionIndex?: number
+  private curveTransactionIndex?: number
 
   /** Summary data built incrementally during swap composition */
   private summaryData?: {
@@ -130,6 +180,16 @@ export class SwapComposer {
     inputSender: string
     outputSender?: string
     outputAmount?: bigint
+    /** Bonding-curve leg of a pre-bonding HayLaunch swap */
+    launch?: {
+      side: 'buy' | 'sell'
+      tokenNum: bigint
+      bondingTokenId: bigint
+      appAddress: string
+      curveTxnId?: string
+      bondingAmount?: bigint
+      refund: bigint
+    }
   }
 
   /**
@@ -313,6 +373,7 @@ export class SwapComposer {
       txns: processedTxns,
       inputTxnRelativeIndex,
       outputTxnRelativeIndex,
+      curveTxnRelativeIndex,
     } = await this.processSwapTransactions()
 
     const afterTxns = await this.executeMiddlewareHooks('afterSwap')
@@ -336,6 +397,11 @@ export class SwapComposer {
     // Calculate the absolute index of the output transaction (last app call in swap)
     if (outputTxnRelativeIndex !== undefined) {
       this.outputTransactionIndex = this.atc.count() + outputTxnRelativeIndex
+    }
+
+    // Calculate the absolute index of a launch swap's curve buy or sell call
+    if (curveTxnRelativeIndex !== undefined) {
+      this.curveTransactionIndex = this.atc.count() + curveTxnRelativeIndex
     }
 
     // Add swap transactions
@@ -472,6 +538,12 @@ export class SwapComposer {
         if (this.outputTransactionIndex !== undefined) {
           this.summaryData.outputTxnId = txIDs[this.outputTransactionIndex]
         }
+        if (
+          this.summaryData.launch &&
+          this.curveTransactionIndex !== undefined
+        ) {
+          this.summaryData.launch.curveTxnId = txIDs[this.curveTransactionIndex]
+        }
       }
 
       // Extract actual output amount from confirmed transaction
@@ -579,6 +651,9 @@ export class SwapComposer {
     const txns = this.atc.buildGroup()
     const totalFees = txns.reduce((sum, tws) => sum + tws.txn.fee, 0n)
 
+    const launch = this.summaryData.launch
+    const curveTxnId = launch?.curveTxnId
+
     return {
       inputAssetId: this.summaryData.inputAssetId,
       outputAssetId: this.summaryData.outputAssetId,
@@ -587,10 +662,24 @@ export class SwapComposer {
       type: this.quote.type as QuoteType,
       totalFees,
       transactionCount: txns.length,
-      inputTxnId: this.summaryData.inputTxnId,
+      // On a launch sell, the tokens sold leave the user in the curve sell call
+      inputTxnId:
+        launch?.side === 'sell' && curveTxnId
+          ? curveTxnId
+          : this.summaryData.inputTxnId,
       outputTxnId: this.summaryData.outputTxnId,
       inputSender: this.summaryData.inputSender,
       outputSender: this.summaryData.outputSender,
+      ...(launch &&
+        curveTxnId && {
+          launch: {
+            side: launch.side,
+            tokenNum: launch.tokenNum,
+            curveTxnId,
+            bondingAmount: launch.bondingAmount,
+            refund: launch.refund,
+          },
+        }),
     }
   }
 
@@ -613,50 +702,49 @@ export class SwapComposer {
     txns: TransactionWithSigner[]
     inputTxnRelativeIndex?: number
     outputTxnRelativeIndex?: number
+    curveTxnRelativeIndex?: number
   }> {
     const appOptIns = await this.processRequiredAppOptIns()
 
-    const swapTxns: TransactionWithSigner[] = []
-    let inputTxnRelativeIndex: number | undefined
-    let inputTxn: Transaction | undefined
-
-    for (let i = 0; i < this.swapTxns.length; i++) {
-      const swapTxn = this.swapTxns[i]
-      if (!swapTxn) continue
-
-      try {
-        const txnBytes = Buffer.from(swapTxn.data, 'base64')
-        const txn = decodeUnsignedTransaction(txnBytes)
-        delete txn.group
-
-        if (swapTxn.signature !== false) {
-          // Pre-signed transaction - use custom Haystack Router signer
-          swapTxns.push({
-            txn,
-            signer: this.createSwapSigner(swapTxn.signature),
-          })
-        } else {
-          // Input payment or asset transfer transaction - use configured signer
-          // Set the note if provided (using type assertion since note is readonly but safe to modify before signing)
-          if (this.note !== undefined) {
-            ;(txn as { note: Uint8Array }).note = this.note
-          }
-          // Track the relative index within processed transactions (after app opt-ins)
-          inputTxnRelativeIndex = appOptIns.length + swapTxns.length
-          inputTxn = txn
-
-          swapTxns.push({
-            txn,
-            signer: this.defaultSigner,
-          })
+    const decoded: DecodedSwapTransaction[] = this.swapTxns.map(
+      (swapTxn, i) => {
+        try {
+          const txn = decodeUnsignedTransaction(
+            Buffer.from(swapTxn.data, 'base64'),
+          )
+          delete txn.group
+          return { txn, signature: swapTxn.signature }
+        } catch (error) {
+          throw new Error(
+            `Failed to process swap transaction at index ${i}: ${error instanceof Error ? error.message : String(error)}`,
+            { cause: error },
+          )
         }
-      } catch (error) {
-        throw new Error(
-          `Failed to process swap transaction at index ${i}: ${error instanceof Error ? error.message : String(error)}`,
-          { cause: error },
-        )
-      }
+      },
+    )
+
+    const inputIndex = this.findInputTransactionIndex(decoded)
+    const inputTxn =
+      inputIndex !== undefined ? decoded[inputIndex]?.txn : undefined
+
+    // Set the note on the input transaction only (using type assertion since
+    // note is readonly but safe to modify before signing). Other user-signed
+    // transactions can differ only by their notes, e.g. HayLaunch gas() calls.
+    if (inputTxn && this.note !== undefined) {
+      ;(inputTxn as { note: Uint8Array }).note = this.note
     }
+
+    // Pre-signed transactions use the custom Haystack Router signer; the rest
+    // are signed by the user
+    const swapTxns: TransactionWithSigner[] = decoded.map(
+      ({ txn, signature }) => ({
+        txn,
+        signer:
+          signature === false
+            ? this.defaultSigner
+            : this.createSwapSigner(signature),
+      }),
+    )
 
     // Initialize summary data with input transaction details
     if (inputTxn) {
@@ -673,18 +761,113 @@ export class SwapComposer {
       }
     }
 
+    const curveIndex = this.initLaunchSummary(decoded)
+
     // The last transaction in swapTxns is the app call that will contain
-    // the inner transaction sending the output asset to the user
+    // the inner transaction sending the output asset to the user. On a launch
+    // buy the output comes from the curve buy call instead, wherever it is.
     // We'll get its ID after buildGroup() is called
     // Store the relative index so we can get the ID later
+    const outputIndex =
+      this.summaryData?.launch?.side === 'buy' && curveIndex !== undefined
+        ? curveIndex
+        : swapTxns.length - 1
     const outputTxnRelativeIndex =
-      swapTxns.length > 0 ? appOptIns.length + swapTxns.length - 1 : undefined
+      outputIndex >= 0 ? appOptIns.length + outputIndex : undefined
 
     return {
       txns: [...appOptIns, ...swapTxns],
-      inputTxnRelativeIndex,
+      inputTxnRelativeIndex:
+        inputIndex !== undefined ? appOptIns.length + inputIndex : undefined,
       outputTxnRelativeIndex,
+      curveTxnRelativeIndex:
+        curveIndex !== undefined ? appOptIns.length + curveIndex : undefined,
     }
+  }
+
+  /**
+   * Finds the swap's input transaction: the user's payment or asset transfer
+   * to the router app, whose address comes from the router's pre-signed app
+   * calls. Falls back to the last user-signed transaction for groups without
+   * a router app call.
+   */
+  private findInputTransactionIndex(
+    txns: DecodedSwapTransaction[],
+  ): number | undefined {
+    const routerAppId = txns.find(
+      ({ txn, signature }) =>
+        signature !== false && txn.type === TransactionType.appl,
+    )?.txn.applicationCall?.appIndex
+
+    if (routerAppId !== undefined) {
+      const routerAddress = getApplicationAddress(routerAppId).toString()
+      const index = txns.findIndex(
+        ({ txn, signature }) =>
+          signature === false &&
+          (txn.payment?.receiver ?? txn.assetTransfer?.receiver)?.toString() ===
+            routerAddress,
+      )
+      if (index !== -1) return index
+    }
+
+    for (let i = txns.length - 1; i >= 0; i--) {
+      if (txns[i]?.signature === false) return i
+    }
+    return undefined
+  }
+
+  /**
+   * For a launch quote, finds the user-signed curve buy or sell call and
+   * records the curve leg in summaryData. On a sell, the input amount becomes
+   * the launch tokens sold.
+   *
+   * @returns The curve call's index within the swap transactions, if found
+   */
+  private initLaunchSummary(
+    txns: DecodedSwapTransaction[],
+  ): number | undefined {
+    const side = this.quote.launch?.side
+    if (!side || !this.summaryData) return undefined
+
+    const curveIndex = txns.findIndex(
+      ({ txn, signature }) =>
+        signature === false && launchCurveSide(txn) === side,
+    )
+    const curveCall = txns[curveIndex]?.txn.applicationCall
+    // buy: (tokenNum, minTokensOut); sell: (tokenNum, tokensToSell, minBondingOut)
+    const tokenNumArg = curveCall?.appArgs[1]
+    if (!curveCall || !tokenNumArg) return undefined
+
+    const appAddress = getApplicationAddress(curveCall.appIndex).toString()
+
+    let bondingAmount: bigint | undefined
+    if (side === 'buy') {
+      // ARC-4 transaction arguments directly precede the app call, and the
+      // bonding payment to the curve is the buy method's last one
+      const payment = txns[curveIndex - 1]?.txn
+      const receiver =
+        payment?.payment?.receiver ?? payment?.assetTransfer?.receiver
+      if (receiver?.toString() === appAddress) {
+        bondingAmount =
+          payment?.payment?.amount ?? payment?.assetTransfer?.amount
+      }
+    } else {
+      const tokensToSell = curveCall.appArgs[2]
+      if (tokensToSell) {
+        this.summaryData.inputAmount = decodeUint64(tokensToSell, 'bigint')
+      }
+    }
+
+    this.summaryData.launch = {
+      side,
+      tokenNum: decodeUint64(tokenNumArg, 'bigint'),
+      bondingTokenId: BigInt(this.quote.launch?.bondingTokenId ?? 0),
+      appAddress,
+      bondingAmount,
+      refund: 0n,
+    }
+
+    return curveIndex
   }
 
   /**
@@ -805,6 +988,7 @@ export class SwapComposer {
             ...this.quote,
             quote: this.quote.quote === '' ? 0n : BigInt(this.quote.quote),
             amount: 0n, // Not available in FetchQuoteResponse
+            launch: this.quote.launch && toSwapLaunchQuote(this.quote.launch),
             createdAt: Date.now(),
           }
 
@@ -849,7 +1033,9 @@ export class SwapComposer {
    * Extract the actual output amount from the confirmed output transaction's inner transactions
    *
    * Analyzes only the output transaction (last app call in the swap) to find the
-   * inner transaction that transfers the output asset to the user.
+   * inner transaction that transfers the output asset to the user. On a launch
+   * buy the output is a balance on the HayLaunch app, so it is read from the
+   * curve buy call's return value instead.
    */
   private async extractActualOutputAmount(): Promise<void> {
     if (!this.summaryData?.outputTxnId) {
@@ -858,16 +1044,39 @@ export class SwapComposer {
 
     const outputAssetId = this.summaryData.outputAssetId
     const userAddress = this.address
+    const launch = this.summaryData.launch
 
     try {
       const pendingInfo = await this.algodClient
         .pendingTransactionInformation(this.summaryData.outputTxnId)
         .do()
 
-      const innerTxns = pendingInfo.innerTxns
-      if (!innerTxns) return
+      if (launch?.side === 'buy') {
+        // The buy call returns the tokens credited to the buyer's balance
+        const tokensCredited = readUint64Return(pendingInfo.logs)
+        if (tokensCredited !== undefined) {
+          this.summaryData.outputAmount = tokensCredited
+          this.summaryData.outputSender = launch.appAddress
+        }
 
-      for (const innerTxn of innerTxns) {
+        // A buy that completes bonding refunds the unused bonding asset
+        for (const innerTxn of pendingInfo.innerTxns ?? []) {
+          const txn = innerTxn.txn.txn
+          if (launch.bondingTokenId === 0n) {
+            if (txn.payment?.receiver.toString() === userAddress) {
+              launch.refund += txn.payment.amount
+            }
+          } else if (
+            txn.assetTransfer?.receiver.toString() === userAddress &&
+            txn.assetTransfer.assetIndex === launch.bondingTokenId
+          ) {
+            launch.refund += txn.assetTransfer.amount
+          }
+        }
+        return
+      }
+
+      for (const innerTxn of pendingInfo.innerTxns ?? []) {
         const txn = innerTxn.txn.txn
         const payment = txn.payment
         const assetTransfer = txn.assetTransfer
@@ -897,6 +1106,19 @@ export class SwapComposer {
       }
     } catch {
       // Silently fail - outputAmount will remain undefined
+    }
+
+    // On a launch sell, the curve call returns the bonding asset paid out after
+    // fees. It's looked up separately so a failure here keeps the output above.
+    if (launch?.side === 'sell' && launch.curveTxnId) {
+      try {
+        const curveInfo = await this.algodClient
+          .pendingTransactionInformation(launch.curveTxnId)
+          .do()
+        launch.bondingAmount = readUint64Return(curveInfo.logs)
+      } catch {
+        // Silently fail - bondingAmount will remain undefined
+      }
     }
   }
 }

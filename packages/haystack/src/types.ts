@@ -99,6 +99,16 @@ export interface FetchQuoteParams {
   readonly address?: string | null
 
   /**
+   * Slippage tolerance as a percentage (e.g., 1 for 1%), in [0, 100)
+   *
+   * Pass the same value you will pass to `newSwap()`. Quotes for pre-bonding
+   * HayLaunch tokens use it to price the bonding curve on the amount the route
+   * actually pays it; without it, those quotes overstate the output by about
+   * the slippage. Other quotes ignore it.
+   */
+  readonly slippage?: number
+
+  /**
    * ⚠️ **ADVANCED USE ONLY - NON-COMPOSABLE SWAPS** ⚠️
    *
    * When set to `true`, removes the automatic exclusion of Tinyman v1 from routing,
@@ -202,6 +212,41 @@ export interface TxnPayload {
 }
 
 /**
+ * Bonding-curve details for a quote that buys or sells a pre-bonding HayLaunch token
+ *
+ * Amounts are in base units of the bonding asset.
+ */
+export interface LaunchQuote {
+  /** `'buy'` when the launch token is the output, `'sell'` when it is the input */
+  readonly side: 'buy' | 'sell'
+  /** HayLaunch token number */
+  readonly tokenNum: number
+  /** Asset the token is bonded in (0 for ALGO) */
+  readonly bondingTokenId: number
+  /** Bonding asset expected to be left in the wallet after the trade */
+  readonly bondingSurplus: number
+  /** Bonding asset refunded when a buy completes bonding (omitted otherwise) */
+  readonly refund?: number
+  /** Whether a buy completes bonding (omitted otherwise) */
+  readonly graduates?: boolean
+}
+
+/**
+ * Normalized bonding-curve details on a SwapQuote, with amounts coerced to bigint
+ */
+export type SwapLaunchQuote = Omit<
+  LaunchQuote,
+  'bondingSurplus' | 'refund' | 'graduates'
+> & {
+  /** Bonding asset expected to be left in the wallet after the trade */
+  readonly bondingSurplus: bigint
+  /** Bonding asset refunded when a buy completes bonding (0n otherwise) */
+  readonly refund: bigint
+  /** Whether a buy completes bonding */
+  readonly graduates: boolean
+}
+
+/**
  * Quote response from the Haystack Router API
  */
 export interface FetchQuoteResponse {
@@ -239,6 +284,11 @@ export interface FetchQuoteResponse {
   readonly type: string
   /** Performance timing data */
   readonly timing?: unknown
+  /**
+   * Bonding-curve details, present only when one side is a pre-bonding HayLaunch token.
+   * For a buy, `quote` is launch tokens out; for a sell, it is the output asset.
+   */
+  readonly launch?: LaunchQuote
 }
 
 /**
@@ -246,7 +296,7 @@ export interface FetchQuoteResponse {
  *
  * Extends the raw API response with additional metadata and type normalization.
  */
-export type SwapQuote = Omit<FetchQuoteResponse, 'quote'> & {
+export type SwapQuote = Omit<FetchQuoteResponse, 'quote' | 'launch'> & {
   /**
    * The quoted output amount or input amount (coerced to bigint)
    *
@@ -260,6 +310,12 @@ export type SwapQuote = Omit<FetchQuoteResponse, 'quote'> & {
 
   /** The address parameter from the quote request (if provided) */
   readonly address?: string
+
+  /** The slippage sent with the quote request (if provided) */
+  readonly slippage?: number
+
+  /** Bonding-curve details, present only when one side is a pre-bonding HayLaunch token */
+  readonly launch?: SwapLaunchQuote
 
   /** Timestamp when the quote was created (in milliseconds) */
   readonly createdAt: number
@@ -328,6 +384,26 @@ export interface FetchSwapTxnsResponse {
 }
 
 /**
+ * Bonding-curve leg of an executed pre-bonding HayLaunch swap
+ */
+export interface LaunchSummary {
+  /** `'buy'` when the launch token was the output, `'sell'` when it was the input */
+  side: 'buy' | 'sell'
+  /** HayLaunch token number */
+  tokenNum: bigint
+  /** Transaction ID of the curve buy or sell call */
+  curveTxnId: string
+  /**
+   * Bonding asset that went through the curve, in base units: the payment into
+   * the curve on a buy, or the curve's payout on a sell. Undefined if it
+   * couldn't be determined.
+   */
+  bondingAmount?: bigint
+  /** Bonding asset refunded by a buy that completed bonding (0n otherwise) */
+  refund: bigint
+}
+
+/**
  * Summary of a swap transaction group after execution
  *
  * Contains the exact input/output amounts and total transaction fees.
@@ -338,9 +414,15 @@ export interface SwapSummary {
   inputAssetId: bigint
   /** Output asset ID (0 for ALGO) */
   outputAssetId: bigint
-  /** Exact input amount in base units, from the user-signed transaction */
+  /**
+   * Exact input amount in base units, from the user-signed transaction.
+   * For a launch sell, the launch tokens sold.
+   */
   inputAmount: bigint
-  /** Exact output amount received in base units, from the inner transaction */
+  /**
+   * Exact output amount received in base units, from the inner transaction.
+   * For a launch buy, the launch tokens credited by the curve.
+   */
   outputAmount: bigint
   /** Quote type */
   type: QuoteType
@@ -348,14 +430,22 @@ export interface SwapSummary {
   totalFees: bigint
   /** Number of transactions in the group */
   transactionCount: number
-  /** Transaction ID of the user-signed input transaction (payment/asset transfer) */
+  /**
+   * Transaction ID of the user-signed input transaction (payment/asset transfer).
+   * For a launch sell, the curve sell call.
+   */
   inputTxnId: string
-  /** Transaction ID of the app call containing the output transfer as an inner transaction */
+  /**
+   * Transaction ID of the app call containing the output transfer as an inner transaction.
+   * For a launch buy, the curve buy call.
+   */
   outputTxnId: string
   /** Address that sent the input asset (the user) */
   inputSender: string
-  /** Address that sent the output asset to the user */
+  /** Address that sent the output asset to the user (the HayLaunch app on a launch buy) */
   outputSender: string
+  /** Bonding-curve details, present only for a pre-bonding HayLaunch swap */
+  launch?: LaunchSummary
 }
 
 /**
