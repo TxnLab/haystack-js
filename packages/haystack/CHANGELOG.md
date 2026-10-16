@@ -1,3 +1,15 @@
+# [3.0.0](https://github.com/TxnLab/haystack-js/compare/v2.0.5...v3.0.0) (2026-10-16)
+
+
+### Features
+
+* add launch token support and require node 22 ([#31](https://github.com/TxnLab/haystack-js/issues/31)) ([359eea6](https://github.com/TxnLab/haystack-js/commit/359eea60e9884df4936b91ceb34b53559da0ae9b))
+
+
+### BREAKING CHANGES
+
+* @txnlab/haystack-router now requires Node.js 22 or later.
+
 ## [2.0.5](https://github.com/TxnLab/haystack-js/compare/v2.0.4...v2.0.5) (2026-02-16)
 
 
