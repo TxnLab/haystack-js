@@ -63,3 +63,4 @@ The public API is whatever `src/index.ts` re-exports: client, composer, constant
 
 - Conventional commits with a **lowercase** subject after the colon, e.g. `fix(client): handle timeout`. Renovate's capitalized `chore(deps): Update…` commits are the exception. Scopes: `client`, `composer`, `middleware`, `types`, `deps`, `examples`, `docs`.
 - semantic-release runs on push to `main`. It derives the version from commit types (`feat`, `fix`, `refactor`, `perf` appear in release notes) and writes `packages/haystack/CHANGELOG.md` and the package version. Never edit either by hand.
+- Mark a breaking change with a `BREAKING CHANGE:` footer only, never `feat!:`. The `angular` preset doesn't parse `!`, so the commit drops out of its release-notes section. PRs are squash-merged and semantic-release reads only the squash commit, so the footer must be in the squash message; trim GitHub's default squash body so footers from branch commits aren't repeated.

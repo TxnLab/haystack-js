@@ -26,7 +26,7 @@ TypeScript/JavaScript SDK for [Haystack Order Router](https://txnlab.gitbook.io/
 npm install @txnlab/haystack-router algosdk
 ```
 
-> **Note**: `algosdk` is a peer dependency and must be installed alongside `@txnlab/haystack-router`.
+> **Note**: Requires Node.js 22 or later. `algosdk` is a peer dependency and must be installed alongside `@txnlab/haystack-router`.
 
 ## Quick Start
 
