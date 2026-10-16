@@ -14,7 +14,7 @@ This example demonstrates how to use the Haystack Router SDK in a Node.js comman
 
 - **Haystack Router API Key** - A free tier key is included in `.env.example` (60 requests/min). For production rate limits, request a key from [support@txnlab.dev](mailto:support@txnlab.dev).
 - algosdk 3.0.0 or later (peer dependency)
-- Node.js >= 20
+- Node.js >= 22
 - pnpm 10.20.0 or later
 
 ## Setup

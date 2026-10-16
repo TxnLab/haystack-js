@@ -13,6 +13,7 @@ import {
   DEPRECATED_PROTOCOLS,
   MAX_FEE_BPS,
 } from './constants'
+import { toSwapLaunchQuote } from './launch'
 import { Logger } from './logger'
 import { request } from './utils'
 import type { SwapMiddleware } from './middleware'
@@ -125,6 +126,7 @@ export class RouterClient {
    *   - If true: API reduces maxGroupSize by 1 and includes opt-in (always included, even if not needed)
    *   - If false: No opt-in transaction included
    *   - If undefined: Falls back to `config.autoOptIn` behavior with account check (if `params.address` is provided)
+   * @param params.slippage - Slippage tolerance as a percentage, in [0, 100). Pass the value you will execute with; required for accurate pre-bonding launch token quotes
    * @returns A FetchQuoteResponse object with routing information
    *
    * @example
@@ -148,8 +150,13 @@ export class RouterClient {
       maxDepth = DEFAULT_MAX_DEPTH,
       optIn,
       address,
+      slippage,
       _allowNonComposableSwaps = false,
     } = params
+
+    if (slippage !== undefined) {
+      this.validateSlippage(slippage)
+    }
 
     // Validate incompatible parameter combinations
     if (_allowNonComposableSwaps && (optIn === true || this.config.autoOptIn)) {
@@ -198,6 +205,10 @@ export class RouterClient {
 
     if (typeof includeOptIn === 'boolean') {
       url.searchParams.append('optIn', String(includeOptIn))
+    }
+
+    if (slippage !== undefined) {
+      url.searchParams.append('slippage', String(slippage))
     }
 
     if (this.config.referrerAddress) {
@@ -304,6 +315,7 @@ export class RouterClient {
    * @param params.maxDepth - The maximum depth (default: 4)
    * @param params.address - The address of the account that will perform the swap (recommended when using `config.autoOptIn` or `params.optIn`)
    * @param params.optIn - Whether to include asset opt-in transaction
+   * @param params.slippage - Slippage tolerance as a percentage, in [0, 100). Pass the value you will execute with; required for accurate pre-bonding launch token quotes
    * @returns A SwapQuote enhanced quote result
    *
    * @example
@@ -354,12 +366,15 @@ export class RouterClient {
     }
 
     const response = await this.fetchQuote(adjustedParams)
+    const { launch, ...rest } = response
 
     return {
-      ...response,
+      ...rest,
       quote: response.quote === '' ? 0n : BigInt(response.quote),
       amount: BigInt(params.amount),
       address: params.address ?? undefined,
+      slippage: adjustedParams.slippage,
+      launch: launch && toSwapLaunchQuote(launch),
       createdAt: Date.now(),
     }
   }
@@ -422,6 +437,18 @@ export class RouterClient {
   }): Promise<SwapComposer> {
     const { quote, address, slippage, signer, note } = config
 
+    // A launch quote prices the curve on the slippage it was fetched with, so
+    // executing at a different slippage makes the quoted output inaccurate
+    if (quote.launch && 'createdAt' in quote && quote.slippage !== slippage) {
+      console.warn(
+        quote.slippage === undefined
+          ? `Launch token quote was fetched without slippage but the swap uses ${slippage}%. ` +
+              'Pass the same slippage to newQuote() for an accurate quoted output.'
+          : `Launch token quote was fetched with ${quote.slippage}% slippage but the swap uses ${slippage}%. ` +
+              'The quoted output may not match what is delivered.',
+      )
+    }
+
     const swapResponse = await this.fetchSwapTransactions({
       quote,
       address,
@@ -461,6 +488,16 @@ export class RouterClient {
       throw new Error(`Invalid Algorand address: ${address}`)
     }
     return address
+  }
+
+  /**
+   * Validates a slippage percentage (0 <= slippage < 100)
+   */
+  private validateSlippage(slippage: number): number {
+    if (!Number.isFinite(slippage) || slippage < 0 || slippage >= 100) {
+      throw new Error(`Invalid slippage: ${slippage} (must be >= 0 and < 100)`)
+    }
+    return slippage
   }
 
   /**

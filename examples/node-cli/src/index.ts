@@ -5,7 +5,7 @@ import algosdk from 'algosdk'
 import { RouterClient } from '@txnlab/haystack-router'
 
 // Load environment variables
-config()
+config({ quiet: true })
 
 interface SwapConfig {
   apiKey: string

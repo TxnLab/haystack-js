@@ -8,22 +8,22 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@blockshake/defly-connect": "^1.2.1",
-    "@perawallet/connect": "^1.4.2",
-    "@tanstack/react-query": "^5.62.14",
+    "@galaxypay/use-wallet-lute": "^1.0.0",
+    "@tanstack/react-query": "^5.104.1",
     "@txnlab/haystack-router": "workspace:*",
-    "@txnlab/use-wallet-react": "^4.3.1",
+    "@txnlab/use-wallet-defly": "^5.0.1",
+    "@txnlab/use-wallet-pera": "^5.0.1",
+    "@txnlab/use-wallet-react": "^5.0.1",
     "algosdk": "^3.9.0",
-    "lute-connect": "^1.6.3",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
   },
   "devDependencies": {
-    "@types/react": "^18.3.12",
-    "@types/react-dom": "^18.3.1",
-    "@vitejs/plugin-react": "^4.3.4",
-    "typescript": "~5.6.2",
-    "vite": "^6.0.5",
-    "vite-plugin-node-polyfills": "^0.24.0"
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "typescript": "~6.0.3",
+    "vite": "^8.3.3",
+    "vite-plugin-node-polyfills": "^0.28.0"
   }
 }

@@ -12,10 +12,10 @@
   "dependencies": {
     "@txnlab/haystack-router": "workspace:*",
     "algosdk": "^3.9.0",
-    "dotenv": "^16.4.7"
+    "dotenv": "^18.0.6"
   },
   "devDependencies": {
-    "@types/node": "^22",
-    "typescript": "^5"
+    "@types/node": "^22.20.5",
+    "typescript": "^6.0.3"
   }
 }

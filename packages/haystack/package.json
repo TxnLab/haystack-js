@@ -44,7 +44,7 @@
     "provenance": true
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "packageManager": "pnpm@10.34.6",
   "scripts": {
@@ -56,12 +56,12 @@
   },
   "devDependencies": {
     "@types/node": "22.20.5",
-    "@vitest/coverage-v8": "4.1.11",
+    "@vitest/coverage-v8": "5.0.3",
     "algosdk": "3.9.0",
     "publint": "0.3.25",
     "tsdown": "0.23.1",
-    "typescript": "5.9.3",
-    "vitest": "4.1.11"
+    "typescript": "6.0.3",
+    "vitest": "5.0.3"
   },
   "peerDependencies": {
     "algosdk": "^3.0.0"

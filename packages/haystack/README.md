@@ -26,7 +26,7 @@ TypeScript/JavaScript SDK for [Haystack Order Router](https://txnlab.gitbook.io/
 npm install @txnlab/haystack-router algosdk
 ```
 
-> **Note**: `algosdk` is a peer dependency and must be installed alongside `@txnlab/haystack-router`.
+> **Note**: Requires Node.js 22 or later. `algosdk` is a peer dependency and must be installed alongside `@txnlab/haystack-router`.
 
 ## Quick Start
 
@@ -148,6 +148,41 @@ console.log('Input transaction ID:', inputTxId)
 ```
 
 The `note` is applied only to the user-signed payment or asset transfer transaction (not pre-signed or middleware transactions). The transaction ID is available after calling `buildGroup()`, `sign()`, or `execute()`.
+
+### Launch Tokens (Pre-Bonding)
+
+API keys with launch-token access can swap any asset into or out of a HayLaunch token that is still on its bonding curve. Quote it like any other asset, as a `fixed-input` swap, and pass the same `slippage` you will execute with:
+
+```typescript
+const quote = await router.newQuote({
+  fromASAID: 31566704, // USDC
+  toASAID: launchTokenAssetId, // pre-bonding launch token
+  amount: 10_000_000,
+  slippage: 1, // same value as newSwap() below
+  address: activeAddress,
+})
+
+if (quote.launch) {
+  // quote.quote: launch tokens out (buy) or output asset (sell)
+  // quote.launch.bondingSurplus: bonding asset left in the wallet
+  // quote.launch.refund: bonding asset refunded when a buy completes bonding
+}
+
+const swap = await router.newSwap({
+  quote,
+  address: activeAddress,
+  signer: transactionSigner,
+  slippage: 1,
+})
+await swap.execute()
+
+const summary = swap.getSummary()
+// summary.outputAmount: launch tokens credited (buy)
+// summary.inputAmount: launch tokens sold (sell)
+// summary.launch: the curve call's ID, bonding amount and refund
+```
+
+Without `slippage`, a launch quote overstates the output by about the slippage; `newSwap()` logs a warning when the two don't match. Fixed-output launch buys and launch-token-to-launch-token swaps aren't supported yet and return a 400.
 
 ### Transaction Signing
 
@@ -409,6 +444,7 @@ async newQuote(params: FetchQuoteParams): Promise<SwapQuote>
 | `maxGroupSize`      | Maximum transactions in atomic group       | `number`                          | `16`            |
 | `maxDepth`          | Maximum swap hops                          | `number`                          | `4`             |
 | `optIn`             | Override auto opt-in behavior              | `boolean`                         | `undefined`     |
+| `slippage`          | Slippage % you will execute with, in [0, 100); required for accurate launch token quotes | `number` | `undefined` |
 
 #### RouterClient.newSwap()
 
@@ -450,6 +486,8 @@ Plain object returned by [`newQuote()`](#routerclientnewquote). Extends the raw 
 | `quote`     | Quoted amount (coerced to `bigint`) | `bigint`              |
 | `amount`    | Original request amount             | `bigint`              |
 | `address`   | User address (if provided)          | `string \| undefined` |
+| `slippage`  | Slippage sent with the quote request (if provided) | `number \| undefined` |
+| `launch`    | Bonding-curve details for a pre-bonding launch token (amounts as `bigint`) | `SwapLaunchQuote \| undefined` |
 | `createdAt` | Timestamp when quote was created    | `number`              |
 
 **All properties from API response:**
