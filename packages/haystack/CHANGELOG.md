@@ -1,3 +1,10 @@
+# [3.1.0](https://github.com/TxnLab/haystack-js/compare/v3.0.0...v3.1.0) (2026-10-27)
+
+
+### Features
+
+* **client:** stop auto-disabling Humble and add Protocol.Humble ([#36](https://github.com/TxnLab/haystack-js/issues/36)) ([e015968](https://github.com/TxnLab/haystack-js/commit/e015968eb254a5bec0a302431caf51d00a972d47))
+
 # [3.0.0](https://github.com/TxnLab/haystack-js/compare/v2.0.5...v3.0.0) (2026-10-16)
 
 
