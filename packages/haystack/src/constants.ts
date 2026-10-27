@@ -3,6 +3,7 @@
  */
 export enum Protocol {
   TinymanV2 = 'TinymanV2',
+  Humble = 'Humble',
   Algofi = 'Algofi',
   Algomint = 'Algomint',
   Pact = 'Pact',
@@ -15,7 +16,7 @@ export enum Protocol {
  *
  * @internal
  */
-export const DEPRECATED_PROTOCOLS = ['Humble', 'Tinyman'] as const
+export const DEPRECATED_PROTOCOLS = ['Tinyman'] as const
 
 /** Default Algod node URI for mainnet */
 export const DEFAULT_ALGOD_URI = 'https://mainnet-api.4160.nodely.dev/'
