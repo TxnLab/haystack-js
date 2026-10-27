@@ -167,11 +167,10 @@ export class RouterClient {
       )
     }
 
-    // Conditionally include deprecated protocols in disabled list
-    // If _allowNonComposableSwaps is true, only exclude Tinyman v1 from auto-disabled list
-    // Otherwise, always include all deprecated protocols (Tinyman v1, Humble)
+    // Always disable the deprecated protocols (Tinyman v1), unless
+    // _allowNonComposableSwaps opts into Tinyman v1
     const allDisabledProtocols = _allowNonComposableSwaps
-      ? [...new Set(['Humble', ...disabledProtocols])]
+      ? [...new Set(disabledProtocols)]
       : [...new Set([...DEPRECATED_PROTOCOLS, ...disabledProtocols])]
 
     let includeOptIn = optIn

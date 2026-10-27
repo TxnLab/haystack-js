@@ -18,6 +18,7 @@ describe('constants', () => {
   describe('Protocol enum', () => {
     it('should have expected protocol values', () => {
       expect(Protocol.TinymanV2).toBe('TinymanV2')
+      expect(Protocol.Humble).toBe('Humble')
       expect(Protocol.Algofi).toBe('Algofi')
       expect(Protocol.Algomint).toBe('Algomint')
       expect(Protocol.Pact).toBe('Pact')
@@ -25,20 +26,20 @@ describe('constants', () => {
       expect(Protocol.TAlgo).toBe('TAlgo')
     })
 
-    it('should have exactly 6 protocols', () => {
+    it('should have exactly 7 protocols', () => {
       const protocols = Object.values(Protocol)
-      expect(protocols).toHaveLength(6)
+      expect(protocols).toHaveLength(7)
     })
   })
 
   describe('DEPRECATED_PROTOCOLS', () => {
-    it('should include Humble and Tinyman', () => {
-      expect(DEPRECATED_PROTOCOLS).toContain('Humble')
+    it('should include Tinyman but not Humble', () => {
       expect(DEPRECATED_PROTOCOLS).toContain('Tinyman')
+      expect(DEPRECATED_PROTOCOLS).not.toContain('Humble')
     })
 
-    it('should have exactly 2 deprecated protocols', () => {
-      expect(DEPRECATED_PROTOCOLS).toHaveLength(2)
+    it('should have exactly 1 deprecated protocol', () => {
+      expect(DEPRECATED_PROTOCOLS).toHaveLength(1)
     })
 
     it('should be a readonly array', () => {

@@ -163,9 +163,7 @@ describe('RouterClient', () => {
       expect(callUrl).toContain('toASAID=31566704')
       expect(callUrl).toContain('amount=1000000')
       expect(callUrl).toContain('type=fixed-output')
-      expect(callUrl).toContain(
-        'disabledProtocols=Humble%2CTinyman%2CTinymanV2',
-      )
+      expect(callUrl).toContain('disabledProtocols=Tinyman%2CTinymanV2')
       expect(callUrl).toContain('maxGroupSize=12')
       expect(callUrl).toContain('maxDepth=3')
       expect(callUrl).toContain('optIn=true')
@@ -190,8 +188,8 @@ describe('RouterClient', () => {
       })
 
       const callUrl = mockRequest.mock.calls?.[0]?.[0] as string
-      expect(callUrl).toContain('Humble')
-      expect(callUrl).toContain('Tinyman')
+      expect(callUrl).toContain('disabledProtocols=Tinyman&')
+      expect(callUrl).not.toContain('Humble')
     })
 
     it('should use custom apiBaseUrl when provided', async () => {
@@ -540,8 +538,7 @@ describe('RouterClient', () => {
         const callUrl = mockRequest.mock.calls?.[0]?.[0] as string
         // Should NOT include Tinyman when _allowNonComposableSwaps is true
         expect(callUrl).not.toContain('Tinyman')
-        // Should still include Humble
-        expect(callUrl).toContain('Humble')
+        expect(callUrl).not.toContain('Humble')
       })
 
       it('should include deprecated protocols by default when _allowNonComposableSwaps is false', async () => {
@@ -566,7 +563,7 @@ describe('RouterClient', () => {
         const callUrl = mockRequest.mock.calls?.[0]?.[0] as string
         // Should include deprecated protocols
         expect(callUrl).toContain('Tinyman')
-        expect(callUrl).toContain('Humble')
+        expect(callUrl).not.toContain('Humble')
       })
 
       it('should throw error when _allowNonComposableSwaps is used with optIn: true', async () => {
