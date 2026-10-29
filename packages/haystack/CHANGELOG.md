@@ -1,3 +1,10 @@
+# [3.2.0](https://github.com/TxnLab/haystack-js/compare/v3.1.0...v3.2.0) (2026-10-29)
+
+
+### Features
+
+* **composer:** support ORDER_ROUTER v4 groups ([#37](https://github.com/TxnLab/haystack-js/issues/37)) ([e533395](https://github.com/TxnLab/haystack-js/commit/e53339582f0d368c8e235c471cc51e6b49655dc4))
+
 # [3.1.0](https://github.com/TxnLab/haystack-js/compare/v3.0.0...v3.1.0) (2026-10-27)
 
 
