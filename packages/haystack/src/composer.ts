@@ -2,6 +2,7 @@ import {
   AtomicTransactionComposer,
   decodeUint64,
   decodeUnsignedTransaction,
+  encodeAddress,
   getApplicationAddress,
   isValidAddress,
   LogicSigAccount,
@@ -39,6 +40,19 @@ const LAUNCH_SELL_SELECTOR = '028a0647'
 /** Prefix of the log that carries an ARC-4 method's return value */
 const ARC4_RETURN_PREFIX = '151f7c75'
 
+/**
+ * Selector of ORDER_ROUTER v4's ARC-28 Swap event: the first 4 bytes of the
+ * SHA-512/256 of
+ * Swap(uint64,uint64,uint8,uint64,uint64,uint64,uint64,uint64,uint64,uint64,uint64,uint64,address,address,address)
+ * (assetIn, assetOut, type, amount, amountIn, outDelta, delivered,
+ * refundSwapped, refunded, algoReturned, treasuryFee, referrerFee, sender,
+ * beneficiary, referrer)
+ */
+const SWAP_EVENT_SELECTOR = '6d221c27'
+
+/** Byte length of a Swap event log: the selector, 11 uint64s, a uint8 and 3 addresses */
+const SWAP_EVENT_LENGTH = 4 + 11 * 8 + 1 + 3 * 32
+
 /** A swap transaction from the API, decoded */
 interface DecodedSwapTransaction {
   txn: Transaction
@@ -73,6 +87,26 @@ function readUint64Return(logs: Uint8Array[] | undefined): bigint | undefined {
     return undefined
   }
   return decodeUint64(log.subarray(4), 'bigint')
+}
+
+/**
+ * Reads the output delivery from the Swap event an ORDER_ROUTER v4 route call
+ * logs at settlement. v3 logs none, so this returns undefined for it.
+ */
+function readSwapEvent(
+  logs: Uint8Array[] | undefined,
+): { assetOut: bigint; delivered: bigint; beneficiary: string } | undefined {
+  const log = logs?.find(
+    (l) =>
+      l.length === SWAP_EVENT_LENGTH &&
+      Buffer.from(l.subarray(0, 4)).toString('hex') === SWAP_EVENT_SELECTOR,
+  )
+  if (!log) return undefined
+  return {
+    assetOut: decodeUint64(log.subarray(12, 20), 'bigint'),
+    delivered: decodeUint64(log.subarray(45, 53), 'bigint'),
+    beneficiary: encodeAddress(log.subarray(125, 157)),
+  }
 }
 
 /**
@@ -786,10 +820,17 @@ export class SwapComposer {
   }
 
   /**
-   * Finds the swap's input transaction: the user's payment or asset transfer
-   * to the router app, whose address comes from the router's pre-signed app
-   * calls. Falls back to the last user-signed transaction for groups without
-   * a router app call.
+   * Finds the swap's input transaction among the API's transactions: the
+   * first user-signed asset transfer to the router app, else the first
+   * user-signed payment to it. The router's address comes from its pre-signed
+   * app calls. Falls back to the last user-signed transaction for groups
+   * without a router app call.
+   *
+   * The user may also pay the router ALGO for its fees and opt-ins, after the
+   * input on ORDER_ROUTER v3 and before an ASA input on v4. The rule relies
+   * on two invariants of the groups the router API builds: an ASA input is
+   * the only asset transfer the user makes to the router, and no payment to
+   * the router precedes an ALGO input.
    */
   private findInputTransactionIndex(
     txns: DecodedSwapTransaction[],
@@ -801,13 +842,16 @@ export class SwapComposer {
 
     if (routerAppId !== undefined) {
       const routerAddress = getApplicationAddress(routerAppId).toString()
-      const index = txns.findIndex(
-        ({ txn, signature }) =>
-          signature === false &&
-          (txn.payment?.receiver ?? txn.assetTransfer?.receiver)?.toString() ===
-            routerAddress,
-      )
-      if (index !== -1) return index
+      const isUserTxnToRouter = ({ txn, signature }: DecodedSwapTransaction) =>
+        signature === false &&
+        (txn.payment?.receiver ?? txn.assetTransfer?.receiver)?.toString() ===
+          routerAddress
+      for (const type of [TransactionType.axfer, TransactionType.pay]) {
+        const index = txns.findIndex(
+          (t) => t.txn.type === type && isUserTxnToRouter(t),
+        )
+        if (index !== -1) return index
+      }
     }
 
     for (let i = txns.length - 1; i >= 0; i--) {
@@ -1030,12 +1074,14 @@ export class SwapComposer {
   }
 
   /**
-   * Extract the actual output amount from the confirmed output transaction's inner transactions
+   * Extract the actual output amount from the confirmed output transaction
    *
-   * Analyzes only the output transaction (last app call in the swap) to find the
-   * inner transaction that transfers the output asset to the user. On a launch
-   * buy the output is a balance on the HayLaunch app, so it is read from the
-   * curve buy call's return value instead.
+   * Analyzes only the output transaction (last app call in the swap). On
+   * ORDER_ROUTER v4 that is the route call, whose Swap event gives the amount
+   * delivered. v3 logs no event, so the output is its first inner transaction
+   * that transfers the output asset to the user (it makes only one). On a
+   * launch buy the output is a balance on the HayLaunch app, so it is read
+   * from the curve buy call's return value instead.
    */
   private async extractActualOutputAmount(): Promise<void> {
     if (!this.summaryData?.outputTxnId) {
@@ -1076,31 +1122,48 @@ export class SwapComposer {
         return
       }
 
-      for (const innerTxn of pendingInfo.innerTxns ?? []) {
-        const txn = innerTxn.txn.txn
-        const payment = txn.payment
-        const assetTransfer = txn.assetTransfer
+      const swapEvent = readSwapEvent(pendingInfo.logs)
+      const routeCall = swapEvent && pendingInfo.txn.txn.applicationCall
+      if (swapEvent && routeCall) {
+        // v4: every payout goes to the event's beneficiary
+        if (
+          swapEvent.assetOut === outputAssetId &&
+          swapEvent.beneficiary === userAddress
+        ) {
+          this.summaryData.outputAmount = swapEvent.delivered
+          this.summaryData.outputSender = getApplicationAddress(
+            routeCall.appIndex,
+          ).toString()
+        }
+      } else {
+        for (const innerTxn of pendingInfo.innerTxns ?? []) {
+          const txn = innerTxn.txn.txn
+          const payment = txn.payment
+          const assetTransfer = txn.assetTransfer
 
-        // Get receiver address based on transaction type
-        const receiver = payment?.receiver ?? assetTransfer?.receiver
-        if (!receiver) continue
+          // Get receiver address based on transaction type
+          const receiver = payment?.receiver ?? assetTransfer?.receiver
+          if (!receiver) continue
 
-        // Check if this transfer is to the user
-        if (receiver.toString() !== userAddress) continue
+          // Check if this transfer is to the user
+          if (receiver.toString() !== userAddress) continue
 
-        // Get sender address for outputSender
-        const senderAddress = txn.sender.toString()
+          // Get sender address for outputSender
+          const senderAddress = txn.sender.toString()
 
-        if (outputAssetId === 0n && payment?.amount != null) {
-          // ALGO output to user
-          this.summaryData.outputAmount = payment.amount
-          this.summaryData.outputSender = senderAddress
-        } else if (outputAssetId !== 0n && assetTransfer) {
-          // ASA output - verify it's the right asset
-          const assetId = assetTransfer.assetIndex
-          if (assetId === outputAssetId && assetTransfer.amount != null) {
-            this.summaryData.outputAmount = assetTransfer.amount
+          if (outputAssetId === 0n && payment?.amount != null) {
+            // ALGO output to user
+            this.summaryData.outputAmount = payment.amount
             this.summaryData.outputSender = senderAddress
+            break
+          } else if (outputAssetId !== 0n && assetTransfer) {
+            // ASA output - verify it's the right asset
+            const assetId = assetTransfer.assetIndex
+            if (assetId === outputAssetId && assetTransfer.amount != null) {
+              this.summaryData.outputAmount = assetTransfer.amount
+              this.summaryData.outputSender = senderAddress
+              break
+            }
           }
         }
       }
