@@ -416,12 +416,15 @@ export interface SwapSummary {
   outputAssetId: bigint
   /**
    * Exact input amount in base units, from the user-signed transaction.
-   * For a launch sell, the launch tokens sold.
+   * For a launch sell, the launch tokens sold. On ORDER_ROUTER v4 an ALGO
+   * input also carries the ALGO that funds the router's opt-ins and pool-call
+   * fees (v3, and an ASA input on v4, fund them in a separate payment).
    */
   inputAmount: bigint
   /**
-   * Exact output amount received in base units, from the inner transaction.
-   * For a launch buy, the launch tokens credited by the curve.
+   * Exact output amount received in base units: on ORDER_ROUTER v4 the
+   * `delivered` field of the route call's Swap event, on v3 the inner
+   * transaction. For a launch buy, the launch tokens credited by the curve.
    */
   outputAmount: bigint
   /** Quote type */
