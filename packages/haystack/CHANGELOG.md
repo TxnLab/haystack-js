@@ -1,3 +1,10 @@
+# [3.3.0](https://github.com/TxnLab/haystack-js/compare/v3.2.0...v3.3.0) (2026-11-01)
+
+
+### Features
+
+* **client:** send the API key in the X-API-Key header ([#38](https://github.com/TxnLab/haystack-js/issues/38)) ([d4fc2a4](https://github.com/TxnLab/haystack-js/commit/d4fc2a4b786821334f06e110269de147509018f5))
+
 # [3.2.0](https://github.com/TxnLab/haystack-js/compare/v3.1.0...v3.2.0) (2026-10-29)
 
 
