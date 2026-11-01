@@ -1,6 +1,7 @@
 import { Algodv2, isValidAddress, type TransactionSigner } from 'algosdk'
 import { SwapComposer, type SignerFunction } from './composer'
 import {
+  API_KEY_HEADER,
   DEFAULT_ALGOD_PORT,
   DEFAULT_ALGOD_TOKEN,
   DEFAULT_ALGOD_URI,
@@ -189,7 +190,6 @@ export class RouterClient {
 
     const url = new URL(`${this.config.apiBaseUrl}/fetchQuote`)
 
-    url.searchParams.append('apiKey', this.config.apiKey)
     url.searchParams.append('algodUri', this.config.algodUri)
     url.searchParams.append('algodToken', this.config.algodToken)
     url.searchParams.append('algodPort', String(this.config.algodPort))
@@ -214,7 +214,9 @@ export class RouterClient {
       url.searchParams.append('referrerAddress', this.config.referrerAddress)
     }
 
-    return request<FetchQuoteResponse>(url.toString())
+    return request<FetchQuoteResponse>(url.toString(), {
+      headers: this.authHeaders(),
+    })
   }
 
   /**
@@ -283,7 +285,6 @@ export class RouterClient {
     const url = new URL(`${this.config.apiBaseUrl}/fetchExecuteSwapTxns`)
 
     const body: FetchSwapTxnsBody = {
-      apiKey: this.config.apiKey,
       address,
       txnPayloadJSON: quote.txnPayload,
       slippage,
@@ -293,9 +294,19 @@ export class RouterClient {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...this.authHeaders(),
       },
       body: JSON.stringify(body),
     })
+  }
+
+  /**
+   * Headers that authenticate a request with the API key. The key goes in the
+   * `X-API-Key` header rather than the URL, where it would end up in logs, browser
+   * history and CDN caches. The API refuses a secret key (`hay_sk_`) in the URL.
+   */
+  private authHeaders(): Record<string, string> {
+    return { [API_KEY_HEADER]: this.config.apiKey }
   }
 
   /**

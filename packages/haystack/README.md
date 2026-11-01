@@ -20,6 +20,8 @@ TypeScript/JavaScript SDK for [Haystack Order Router](https://txnlab.gitbook.io/
 | **Free** | `1b72df7e-1131-4449-8ce1-29b79dd3f51e` | 60 requests/min | Development, testing, low-volume integrations |
 | **Production** | Request from [support@txnlab.dev](mailto:support@txnlab.dev) | Higher limits | Production applications |
 
+The SDK sends the key in the `X-API-Key` header, never in the URL, so it stays out of server logs, browser history and caches.
+
 ## Installation
 
 ```bash
@@ -413,7 +415,7 @@ new RouterClient(config: ConfigParams)
 
 | Option            | Description                                                  | Type                  | Default                                |
 | ----------------- | ------------------------------------------------------------ | --------------------- | -------------------------------------- |
-| `apiKey`          | Your Haystack Router API key                                          | `string`              | **required**                           |
+| `apiKey`          | Your Haystack Router API key, sent in the `X-API-Key` header          | `string`              | **required**                           |
 | `apiBaseUrl`      | Base URL for the Haystack Router API                                  | `string`              | `https://hayrouter.txnlab.dev`            |
 | `algodUri`        | Algod node URI                                               | `string`              | `https://mainnet-api.4160.nodely.dev/` |
 | `algodToken`      | Algod node token                                             | `string`              | `''`                                   |

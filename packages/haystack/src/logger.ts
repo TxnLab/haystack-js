@@ -89,7 +89,11 @@ export class Logger {
 
         for (const [key, value] of Object.entries(data)) {
           // Redact sensitive fields
-          if (key === 'apiKey' || key === 'algodToken') {
+          if (
+            key === 'apiKey' ||
+            key === 'algodToken' ||
+            key.toLowerCase() === 'x-api-key'
+          ) {
             sanitized[key] = '[REDACTED]'
             continue
           }

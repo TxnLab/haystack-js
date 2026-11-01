@@ -148,6 +148,19 @@ describe('Logger', () => {
       expect(calls[0][1]).toEqual({ apiKey: '[REDACTED]', other: 'visible' })
     })
 
+    it('should redact the X-API-Key header in any case', () => {
+      Logger.setLevel('info')
+
+      Logger.info('test', {
+        headers: { 'X-API-Key': 'secret-key', 'x-api-key': 'secret-key' },
+      })
+
+      const calls = (console.log as any).mock.calls
+      expect(calls[0][1]).toEqual({
+        headers: { 'X-API-Key': '[REDACTED]', 'x-api-key': '[REDACTED]' },
+      })
+    })
+
     it('should redact algodToken field', () => {
       Logger.setLevel('info')
 

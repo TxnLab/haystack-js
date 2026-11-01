@@ -365,8 +365,6 @@ export interface FetchSwapTxnsParams {
  * @internal
  */
 export interface FetchSwapTxnsBody {
-  /** API key for authentication */
-  readonly apiKey: string
   /** Address of the account that will sign the transactions */
   readonly address: string
   /** Encrypted transaction payload from the quote */
