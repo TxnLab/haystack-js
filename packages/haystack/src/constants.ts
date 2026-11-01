@@ -30,6 +30,9 @@ export const DEFAULT_ALGOD_PORT = 443
 /** Default Haystack Router API base URL */
 export const DEFAULT_API_BASE_URL = 'https://hayrouter.txnlab.dev/api'
 
+/** HTTP header that carries the Haystack Router API key */
+export const API_KEY_HEADER = 'X-API-Key'
+
 /** Default fee in basis points (0.10%) */
 export const DEFAULT_FEE_BPS = 10
 

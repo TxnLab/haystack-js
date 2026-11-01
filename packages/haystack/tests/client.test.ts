@@ -135,6 +135,18 @@ describe('RouterClient', () => {
       expect(mockRequest).toHaveBeenCalledOnce()
     })
 
+    it('should send the API key in the X-API-Key header, not the URL', async () => {
+      mockRequest.mockResolvedValue({ quote: '1', route: [] })
+
+      await client.fetchQuote({ fromASAID: 0, toASAID: 31566704, amount: 1 })
+
+      const [url, options] = mockRequest.mock.calls?.[0] as
+        [string, RequestInit] | []
+      expect(new URL(url as string).searchParams.has('apiKey')).toBe(false)
+      expect(url).not.toContain('test-api-key')
+      expect(options?.headers).toEqual({ 'X-API-Key': 'test-api-key' })
+    })
+
     it('should include all query parameters in the request', async () => {
       const mockQuote: Partial<FetchQuoteResponse> = {
         fromASAID: 0,
@@ -761,9 +773,13 @@ describe('RouterClient', () => {
         [string, RequestInit] | []
       expect(url).toContain('fetchExecuteSwapTxns')
       expect(options?.method).toBe('POST')
-      expect(options?.headers).toEqual({ 'Content-Type': 'application/json' })
+      expect(options?.headers).toEqual({
+        'Content-Type': 'application/json',
+        'X-API-Key': 'test-api-key',
+      })
 
       const body = JSON.parse(options?.body as string)
+      expect(body).not.toHaveProperty('apiKey')
       expect(body.address).toBe(validAddress)
       expect(body.slippage).toBe(1.0)
       expect(body.txnPayloadJSON).toEqual(mockQuote.txnPayload)
