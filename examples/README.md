@@ -102,13 +102,13 @@ Each example includes a `.env.example` file with the free tier API key pre-confi
 ### React / React Query
 
 ```bash
-VITE_HAYSTACK_ROUTER_API_KEY=1b72df7e-1131-4449-8ce1-29b79dd3f51e  # Free tier (60 requests/min)
+VITE_HAYSTACK_ROUTER_API_KEY=hay_pk_4zhj33wahuxfplteyif5xpcgnm  # Free tier (60 requests/min)
 ```
 
 ### Node.js CLI
 
 ```bash
-HAYSTACK_ROUTER_API_KEY=1b72df7e-1131-4449-8ce1-29b79dd3f51e  # Free tier (60 requests/min)
+HAYSTACK_ROUTER_API_KEY=hay_pk_4zhj33wahuxfplteyif5xpcgnm  # Free tier (60 requests/min)
 ACCOUNT_MNEMONIC="your 25 word mnemonic phrase"
 ```
 
