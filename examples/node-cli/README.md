@@ -35,7 +35,7 @@ cp .env.example .env
 
 ```env
 # Haystack Router API key - Free tier (60 requests/min)
-HAYSTACK_ROUTER_API_KEY=1b72df7e-1131-4449-8ce1-29b79dd3f51e
+HAYSTACK_ROUTER_API_KEY=hay_pk_4zhj33wahuxfplteyif5xpcgnm
 
 # Required: Your 25-word account mnemonic
 # WARNING: Keep this file private and never commit it!
