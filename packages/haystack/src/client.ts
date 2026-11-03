@@ -14,6 +14,7 @@ import {
   DEPRECATED_PROTOCOLS,
   MAX_FEE_BPS,
 } from './constants'
+import { toSwapFirstStageQuote } from './firststage'
 import { toSwapLaunchQuote } from './launch'
 import { Logger } from './logger'
 import { request } from './utils'
@@ -206,6 +207,12 @@ export class RouterClient {
       url.searchParams.append('optIn', String(includeOptIn))
     }
 
+    // Lets the router quote a First Stage taxed token's swap from the
+    // account's own holding (wrapped only while it is frozen)
+    if (address) {
+      url.searchParams.append('address', this.validateAddress(address))
+    }
+
     if (slippage !== undefined) {
       url.searchParams.append('slippage', String(slippage))
     }
@@ -376,7 +383,7 @@ export class RouterClient {
     }
 
     const response = await this.fetchQuote(adjustedParams)
-    const { launch, ...rest } = response
+    const { launch, firstStage, ...rest } = response
 
     return {
       ...rest,
@@ -385,6 +392,7 @@ export class RouterClient {
       address: params.address ?? undefined,
       slippage: adjustedParams.slippage,
       launch: launch && toSwapLaunchQuote(launch),
+      firstStage: firstStage && toSwapFirstStageQuote(firstStage),
       createdAt: Date.now(),
     }
   }

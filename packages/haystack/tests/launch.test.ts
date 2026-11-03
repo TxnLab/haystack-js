@@ -240,12 +240,14 @@ describe('SwapComposer launch token swaps', () => {
         assetIndex: 3454502531,
         suggestedParams,
       })
-      pendingInfo[txIds[12]!] = { innerTxns: [inner(output)] }
+      // The router's finalize (its last app call) pays the output, not the
+      // user's transactions after it
+      pendingInfo[txIds[8]!] = { innerTxns: [inner(output)] }
 
       await composer.execute()
 
       const summary = composer.getSummary()
-      expect(summary?.outputTxnId).toBe(txIds[12])
+      expect(summary?.outputTxnId).toBe(txIds[8])
       expect(summary?.outputAmount).toBe(42n)
       expect(summary?.launch).toBeUndefined()
     })

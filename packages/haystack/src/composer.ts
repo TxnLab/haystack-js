@@ -18,6 +18,7 @@ import {
   type TransactionWithSigner,
 } from 'algosdk'
 import { DEFAULT_CONFIRMATION_ROUNDS } from './constants'
+import { toSwapFirstStageQuote } from './firststage'
 import { toSwapLaunchQuote } from './launch'
 import { Logger } from './logger'
 import type { SwapMiddleware, SwapContext, QuoteContext } from './middleware'
@@ -797,15 +798,15 @@ export class SwapComposer {
 
     const curveIndex = this.initLaunchSummary(decoded)
 
-    // The last transaction in swapTxns is the app call that will contain
-    // the inner transaction sending the output asset to the user. On a launch
-    // buy the output comes from the curve buy call instead, wherever it is.
+    // The router's last app call (v4's route, v3's finalize) holds the inner
+    // transaction sending the output asset to the user. On a launch buy the
+    // output comes from the curve buy call instead, wherever it is.
     // We'll get its ID after buildGroup() is called
     // Store the relative index so we can get the ID later
     const outputIndex =
       this.summaryData?.launch?.side === 'buy' && curveIndex !== undefined
         ? curveIndex
-        : swapTxns.length - 1
+        : this.findOutputTransactionIndex(decoded)
     const outputTxnRelativeIndex =
       outputIndex >= 0 ? appOptIns.length + outputIndex : undefined
 
@@ -858,6 +859,23 @@ export class SwapComposer {
       if (txns[i]?.signature === false) return i
     }
     return undefined
+  }
+
+  /**
+   * Finds the router's last app call among the API's transactions: v4's
+   * route call or v3's finalize, which pays the output. The router's calls
+   * are the pre-signed ones. A First Stage swap ends with the user's own tax
+   * payment and First Stage calls after it, so the last transaction isn't
+   * always the router's. Falls back to the last transaction.
+   */
+  private findOutputTransactionIndex(txns: DecodedSwapTransaction[]): number {
+    for (let i = txns.length - 1; i >= 0; i--) {
+      const t = txns[i]
+      if (t?.signature !== false && t?.txn.type === TransactionType.appl) {
+        return i
+      }
+    }
+    return txns.length - 1
   }
 
   /**
@@ -1033,6 +1051,9 @@ export class SwapComposer {
             quote: this.quote.quote === '' ? 0n : BigInt(this.quote.quote),
             amount: 0n, // Not available in FetchQuoteResponse
             launch: this.quote.launch && toSwapLaunchQuote(this.quote.launch),
+            firstStage:
+              this.quote.firstStage &&
+              toSwapFirstStageQuote(this.quote.firstStage),
             createdAt: Date.now(),
           }
 

@@ -347,6 +347,47 @@ describe('SwapComposer on ORDER_ROUTER v3 and v4 groups', () => {
       )
     })
 
+    // A First Stage sell: the user's top call before the route, and the tax
+    // payment and bottom call after it
+    it('is the Swap event delivery on v4 when First Stage calls follow the route', async () => {
+      const FIRST_STAGE = 3158291365n
+      const MOOJ = 2154668640n
+      const userCall = (note: string) =>
+        toSwapTxn(
+          algosdk.makeApplicationNoOpTxnFromObject({
+            sender: user,
+            appIndex: FIRST_STAGE,
+            suggestedParams,
+            note: new TextEncoder().encode(note),
+          }),
+        )
+      const composer = createComposer(quote(MOOJ, 0n), [
+        userCall('top'),
+        ...v4Group(MOOJ),
+        userAxfer(FIRST_STAGE, 90_000, MOOJ),
+        userCall('bottom'),
+      ])
+      const { txns, txIds } = await buildAndStubExecute(composer)
+      pendingInfo[txIds[2]!] = routeInfo(
+        txns[2]!.txn,
+        [
+          swapEventLog({
+            assetIn: MOOJ,
+            assetOut: 0n,
+            delivered: 3_000_000n,
+            beneficiary: user,
+          }),
+        ],
+        [innerPay(user, 3_000_000)],
+      )
+
+      await composer.execute()
+
+      expect(composer.getInputTransactionId()).toBe(txns[1]?.txn.txID())
+      expect(composer.getSummary()?.outputAmount).toBe(3_000_000n)
+      expect(composer.getSummary()?.inputAmount).toBe(1_000_000n)
+    })
+
     it('is unknown on v4 when the Swap event pays another beneficiary', async () => {
       const composer = createComposer(quote(0n, USDC), v4Group(0n))
       const { txns, txIds } = await buildAndStubExecute(composer)
