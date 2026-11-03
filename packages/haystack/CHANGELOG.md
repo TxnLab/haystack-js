@@ -1,3 +1,10 @@
+# [3.4.0](https://github.com/TxnLab/haystack-js/compare/v3.3.0...v3.4.0) (2026-11-03)
+
+
+### Features
+
+* **client:** send the swapper's address and expose First Stage taxes ([#41](https://github.com/TxnLab/haystack-js/issues/41)) ([c12bada](https://github.com/TxnLab/haystack-js/commit/c12bada4b4e60e399151c930ea2cda565316ca64))
+
 # [3.3.0](https://github.com/TxnLab/haystack-js/compare/v3.2.0...v3.3.0) (2026-11-01)
 
 
