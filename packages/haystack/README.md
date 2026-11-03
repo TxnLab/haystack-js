@@ -186,6 +186,27 @@ const summary = swap.getSummary()
 
 Without `slippage`, a launch quote overstates the output by about the slippage; `newSwap()` logs a warning when the two don't match. Fixed-output launch buys and launch-token-to-launch-token swaps aren't supported yet and return a 400.
 
+### First Stage Taxed Tokens
+
+First Stage tokens (MOOJ, DEAL, DUMBLY, STACKED and others) are frozen in registered holders' wallets and charge a tax to move. The router handles them itself: when a swap's input or output is one of these tokens and the holding is frozen, the swap group includes First Stage's own calls (unfreeze, the tax payment, refreeze), and the quote accounts for the tax. Pass `address`, so the router can check the holding:
+
+```typescript
+const quote = await router.newQuote({
+  fromASAID: 2154668640, // MOOJ
+  toASAID: 0, // ALGO
+  amount: 1_000_000_000,
+  address: activeAddress,
+})
+
+if (quote.firstStage) {
+  // quote.quote is net of the tax
+  // quote.firstStage.fromTax: MOOJ sell tax, included in `amount`
+  // quote.firstStage.toTax: the output's buy tax (0 here)
+}
+```
+
+Without `address`, the swap is built without First Stage's calls, which fails for a frozen holding. Don't use a First Stage middleware (such as `@firststage/deflex-middleware`) with the router: its calls and the router's would be added twice, and the group fails. This applies to ORDER_ROUTER v4 swaps, and is on for API keys by default; contact TxnLab if your key's integration still wraps these swaps itself.
+
 ### Transaction Signing
 
 The SDK supports both standard `algosdk.TransactionSigner` and ARC-1 compliant signer functions.
@@ -298,25 +319,27 @@ Middleware can:
 - Add transactions before the swap (e.g., unfreeze account, setup calls)
 - Add transactions after the swap (e.g., tax payments, cleanup calls)
 
+First Stage tokens no longer need one: the router wraps them itself (see [First Stage Taxed Tokens](#first-stage-taxed-tokens)).
+
 ```typescript
 import { RouterClient } from '@txnlab/haystack-router'
-import { FirstStageMiddleware } from '@firststage/deflex-middleware' // Example external package
+import { MyAssetMiddleware } from 'my-asset-middleware' // Example external package
 
 // Initialize middleware
-const firstStage = new FirstStageMiddleware({
+const myAsset = new MyAssetMiddleware({
   contractAppId: 123456,
 })
 
 // Pass middleware to RouterClient
 const router = new RouterClient({
   apiKey: '1b72df7e-1131-4449-8ce1-29b79dd3f51e', // Free tier (60 requests/min)
-  middleware: [firstStage], // Middleware is applied automatically
+  middleware: [myAsset], // Middleware is applied automatically
 })
 
 // Use normally - middleware handles everything
 const quote = await router.newQuote({
   fromASAID: 0,        // ALGO
-  toASAID: 789012,     // Custom asset (e.g., MOOJ, DEAL)
+  toASAID: 789012,     // Custom asset
   amount: 1_000_000,
   address: userAddress,
 })

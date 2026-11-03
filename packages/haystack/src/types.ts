@@ -95,7 +95,13 @@ export interface FetchQuoteParams {
   /** Whether to include asset opt-in transaction (overrides config.autoOptIn if set) */
   readonly optIn?: boolean
 
-  /** Address of the account that will perform the swap (required if autoOptIn is enabled) */
+  /**
+   * Address of the account that will perform the swap (required if autoOptIn is enabled)
+   *
+   * Sent with the quote request: a swap of a First Stage taxed token (MOOJ and
+   * others) is quoted with its tax, and wrapped in First Stage's calls, only
+   * when this account's holding is frozen. Without it, the swap isn't wrapped.
+   */
   readonly address?: string | null
 
   /**
@@ -247,6 +253,30 @@ export type SwapLaunchQuote = Omit<
 }
 
 /**
+ * First Stage taxes of a quote that swaps a First Stage taxed token (MOOJ and
+ * others) out of or into a frozen holding. The router adds First Stage's own
+ * calls to the swap group; don't also use a First Stage middleware.
+ *
+ * Amounts are in base units of that side's asset.
+ */
+export interface FirstStageQuote {
+  /** Sell tax on the input asset (0 when the input isn't wrapped or isn't taxed) */
+  readonly fromTax: number
+  /** Buy tax on the output asset (0 when the output isn't wrapped or isn't taxed) */
+  readonly toTax: number
+  /** The sides the swap wraps in First Stage's calls when their holding is frozen */
+  readonly wrapped: ('from' | 'to')[]
+}
+
+/**
+ * Normalized First Stage taxes on a SwapQuote, with amounts coerced to bigint
+ */
+export type SwapFirstStageQuote = Omit<FirstStageQuote, 'fromTax' | 'toTax'> & {
+  readonly fromTax: bigint
+  readonly toTax: bigint
+}
+
+/**
  * Quote response from the Haystack Router API
  */
 export interface FetchQuoteResponse {
@@ -289,6 +319,12 @@ export interface FetchQuoteResponse {
    * For a buy, `quote` is launch tokens out; for a sell, it is the output asset.
    */
   readonly launch?: LaunchQuote
+  /**
+   * First Stage taxes, present only when the swap wraps a First Stage taxed
+   * token's frozen holding. `quote` is already net of them: what the output
+   * holding keeps (fixed-input), or all the input holding sends (fixed-output).
+   */
+  readonly firstStage?: FirstStageQuote
 }
 
 /**
@@ -296,7 +332,10 @@ export interface FetchQuoteResponse {
  *
  * Extends the raw API response with additional metadata and type normalization.
  */
-export type SwapQuote = Omit<FetchQuoteResponse, 'quote' | 'launch'> & {
+export type SwapQuote = Omit<
+  FetchQuoteResponse,
+  'quote' | 'launch' | 'firstStage'
+> & {
   /**
    * The quoted output amount or input amount (coerced to bigint)
    *
@@ -316,6 +355,9 @@ export type SwapQuote = Omit<FetchQuoteResponse, 'quote' | 'launch'> & {
 
   /** Bonding-curve details, present only when one side is a pre-bonding HayLaunch token */
   readonly launch?: SwapLaunchQuote
+
+  /** First Stage taxes, present only when the swap wraps a First Stage taxed token's frozen holding */
+  readonly firstStage?: SwapFirstStageQuote
 
   /** Timestamp when the quote was created (in milliseconds) */
   readonly createdAt: number
