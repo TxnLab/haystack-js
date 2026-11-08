@@ -4,6 +4,7 @@ import {
   decodeUnsignedTransaction,
   encodeAddress,
   getApplicationAddress,
+  isTransactionWithSigner,
   isValidAddress,
   LogicSigAccount,
   makeApplicationOptInTxnFromObject,
@@ -17,7 +18,7 @@ import {
   type TransactionSigner,
   type TransactionWithSigner,
 } from 'algosdk'
-import { DEFAULT_CONFIRMATION_ROUNDS } from './constants'
+import { DEFAULT_CONFIRMATION_ROUNDS, FALCON_EXTRA_FEE } from './constants'
 import { toSwapFirstStageQuote } from './firststage'
 import { toSwapLaunchQuote } from './launch'
 import { Logger } from './logger'
@@ -29,6 +30,7 @@ import type {
   SwapQuote,
   MethodCall,
   QuoteType,
+  SignerType,
   SwapSummary,
 } from './types'
 
@@ -161,6 +163,20 @@ export interface SwapComposerConfig {
   readonly middleware?: SwapMiddleware[]
   /** Optional note field for the user-signed input transaction (payment or asset transfer) */
   readonly note?: Uint8Array
+  /**
+   * The kind of key `address` signs with (default: the quote's `signerType`,
+   * else `'ed25519'`). For `'falcon'`, the composer adds the extra fee of each
+   * transaction the account sends to the swap's input transfer as it builds
+   * the group.
+   */
+  readonly signerType?: SignerType
+  /**
+   * Whether `swapTxns`' fees already include a Falcon signer's extra fees:
+   * the `fetchSwapTransactions()` response's `signerType` is `'falcon'`. Then
+   * only the transactions the composer adds are counted. Default: false, and
+   * every transaction the account sends is.
+   */
+  readonly signerFeesIncluded?: boolean
   /** Debug logging level (propagated from RouterClient) */
   readonly debugLevel?: 'none' | 'info' | 'debug' | 'trace'
 }
@@ -201,6 +217,15 @@ export class SwapComposer {
   private readonly signer: TransactionSigner | SignerFunction
   private readonly middleware: SwapMiddleware[]
   private readonly note?: Uint8Array
+  private readonly signerType: SignerType
+  private readonly signerFeesIncluded: boolean
+  /** Transactions the account sends whose Falcon fees the composer adds */
+  private signerFeeTxns = 0
+  /** The account's first transaction in the group, which carries them when there's no input transfer */
+  private firstUserTxn?: Transaction
+  /** The swap's input transfer, whose fee carries a Falcon signer's extra fees */
+  private inputTxn?: Transaction
+  private signerFeesAdded = false
   private inputTransactionIndex?: number
   private outputTransactionIndex?: number
   private curveTransactionIndex?: number
@@ -272,6 +297,8 @@ export class SwapComposer {
     this.signer = config.signer
     this.middleware = config.middleware ?? []
     this.note = config.note
+    this.signerType = config.signerType ?? config.quote.signerType ?? 'ed25519'
+    this.signerFeesIncluded = config.signerFeesIncluded ?? false
   }
 
   /**
@@ -325,6 +352,7 @@ export class SwapComposer {
     }
 
     this.atc.addTransaction({ txn: transaction, signer })
+    this.trackSignerFee(transaction.sender, transaction)
     return this
   }
 
@@ -359,6 +387,13 @@ export class SwapComposer {
       ...methodCall,
       signer: methodCall.signer ?? signer,
     })
+    // Its transaction arguments go before it. The ATC builds the call itself,
+    // so it can't carry the fees
+    for (const arg of methodCall.methodArgs ?? []) {
+      if (isTransactionWithSigner(arg))
+        this.trackSignerFee(arg.txn.sender, arg.txn)
+    }
+    this.trackSignerFee(methodCall.sender)
     return this
   }
 
@@ -401,11 +436,14 @@ export class SwapComposer {
 
     for (const txnWithSigner of beforeTxns) {
       this.atc.addTransaction(txnWithSigner)
+      this.trackSignerFee(txnWithSigner.txn.sender, txnWithSigner.txn)
     }
 
     // Process swap transactions and execute afterSwap hooks
     const {
       txns: processedTxns,
+      apiTxns,
+      inputTxn,
       inputTxnRelativeIndex,
       outputTxnRelativeIndex,
       curveTxnRelativeIndex,
@@ -439,14 +477,23 @@ export class SwapComposer {
       this.curveTransactionIndex = this.atc.count() + curveTxnRelativeIndex
     }
 
-    // Add swap transactions
+    // Add swap transactions. The router's own (apiTxns) already include a
+    // Falcon signer's extra fees when execute said so
     for (const txnWithSigner of processedTxns) {
       this.atc.addTransaction(txnWithSigner)
+      this.trackSignerFee(
+        txnWithSigner.txn.sender,
+        txnWithSigner.txn,
+        this.signerFeesIncluded && apiTxns.has(txnWithSigner.txn),
+      )
     }
+    // Only now in the group, so it can carry the fees
+    this.inputTxn = inputTxn
 
     // Add afterSwap middleware transactions
     for (const txnWithSigner of afterTxns) {
       this.atc.addTransaction(txnWithSigner)
+      this.trackSignerFee(txnWithSigner.txn.sender, txnWithSigner.txn)
     }
 
     this.swapTransactionsAdded = true
@@ -478,6 +525,7 @@ export class SwapComposer {
    * ```
    */
   buildGroup(): TransactionWithSigner[] {
+    this.addSignerFees()
     return this.atc.buildGroup()
   }
 
@@ -504,6 +552,7 @@ export class SwapComposer {
       await this.addSwapTransactions()
     }
 
+    this.addSignerFees()
     return await this.atc.gatherSignatures()
   }
 
@@ -528,6 +577,7 @@ export class SwapComposer {
       await this.addSwapTransactions()
     }
 
+    this.addSignerFees()
     return await this.atc.submit(this.algodClient)
   }
 
@@ -560,6 +610,7 @@ export class SwapComposer {
         await this.addSwapTransactions()
       }
 
+      this.addSignerFees()
       const { txIDs, ...result } = await this.atc.execute(
         this.algodClient,
         waitRounds,
@@ -719,6 +770,56 @@ export class SwapComposer {
   }
 
   /**
+   * Counts a transaction from sender toward a Falcon signer's extra fees
+   * (addSignerFees) when the account sends it, unless the router's fees
+   * already include it (included). Every way of adding a transaction calls
+   * it; txn is the transaction when the composer holds it (not a method call
+   * the ATC builds), which can then carry the fees.
+   */
+  private trackSignerFee(
+    sender: { toString(): string },
+    txn?: Transaction,
+    included = false,
+  ): void {
+    if (sender.toString() !== this.address) return
+    if (txn) this.firstUserTxn ??= txn
+    if (!included) this.signerFeeTxns++
+  }
+
+  /**
+   * Adds a Falcon signer's extra fees before the group is built: a Falcon
+   * signature costs 3 fee units where an ed25519 one costs 1, and fees pool
+   * across the group, so the fee of the swap's input transfer (which already
+   * carries the router's fee budget) rises by FALCON_EXTRA_FEE for each
+   * transaction the account sends that the router's fees don't include. The
+   * account pays it, like every fee of the group. Runs once, while the group
+   * is still being built.
+   */
+  private addSignerFees(): void {
+    if (
+      this.signerType !== 'falcon' ||
+      this.signerFeesAdded ||
+      this.getStatus() !== SwapComposerStatus.BUILDING
+    ) {
+      return
+    }
+    if (this.signerFeeTxns > 0) {
+      const carrier = this.inputTxn ?? this.firstUserTxn
+      if (!carrier) {
+        throw new Error(
+          `No transaction from ${this.address} in the group to carry its Falcon signature fees`,
+        )
+      }
+      carrier.fee += FALCON_EXTRA_FEE * BigInt(this.signerFeeTxns)
+      Logger.debug('Added Falcon signature fees', {
+        transactions: this.signerFeeTxns,
+        fee: carrier.fee,
+      })
+    }
+    this.signerFeesAdded = true
+  }
+
+  /**
    * Validates an Algorand address
    */
   private validateAddress(address: string): string {
@@ -735,6 +836,10 @@ export class SwapComposer {
    */
   private async processSwapTransactions(): Promise<{
     txns: TransactionWithSigner[]
+    /** The API's transactions among txns, the app opt-ins left out */
+    apiTxns: Set<Transaction>
+    /** The swap's input transfer among txns */
+    inputTxn?: Transaction
     inputTxnRelativeIndex?: number
     outputTxnRelativeIndex?: number
     curveTxnRelativeIndex?: number
@@ -812,6 +917,8 @@ export class SwapComposer {
 
     return {
       txns: [...appOptIns, ...swapTxns],
+      apiTxns: new Set(decoded.map(({ txn }) => txn)),
+      inputTxn,
       inputTxnRelativeIndex:
         inputIndex !== undefined ? appOptIns.length + inputIndex : undefined,
       outputTxnRelativeIndex,
@@ -1042,10 +1149,11 @@ export class SwapComposer {
   ): Promise<TransactionWithSigner[]> {
     const allTxns: TransactionWithSigner[] = []
 
-    // Convert to SwapQuote if needed
+    // Convert to SwapQuote if needed, with the signer type the composer
+    // composes for (a newSwap() override included)
     const quote: SwapQuote =
       'createdAt' in this.quote
-        ? this.quote
+        ? { ...this.quote, signerType: this.signerType }
         : {
             ...this.quote,
             quote: this.quote.quote === '' ? 0n : BigInt(this.quote.quote),
@@ -1054,6 +1162,7 @@ export class SwapComposer {
             firstStage:
               this.quote.firstStage &&
               toSwapFirstStageQuote(this.quote.firstStage),
+            signerType: this.signerType,
             createdAt: Date.now(),
           }
 

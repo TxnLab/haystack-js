@@ -27,6 +27,7 @@ import type {
   FetchSwapTxnsParams,
   FetchSwapTxnsBody,
   FetchQuoteParams,
+  SignerType,
   SwapQuote,
 } from './types'
 
@@ -153,11 +154,22 @@ export class RouterClient {
       optIn,
       address,
       slippage,
+      signerType,
       _allowNonComposableSwaps = false,
     } = params
 
     if (slippage !== undefined) {
       this.validateSlippage(slippage)
+    }
+
+    if (
+      signerType !== undefined &&
+      signerType !== 'ed25519' &&
+      signerType !== 'falcon'
+    ) {
+      throw new Error(
+        `Invalid signerType: ${String(signerType)}. Must be 'ed25519' or 'falcon'`,
+      )
     }
 
     // Validate incompatible parameter combinations
@@ -215,6 +227,12 @@ export class RouterClient {
 
     if (slippage !== undefined) {
       url.searchParams.append('slippage', String(slippage))
+    }
+
+    // A Falcon signer's transactions cost 3 fee units, which the router then
+    // plans for and includes in the fees of the transactions it builds
+    if (signerType === 'falcon') {
+      url.searchParams.append('signerType', signerType)
     }
 
     if (this.config.referrerAddress) {
@@ -393,6 +411,9 @@ export class RouterClient {
       slippage: adjustedParams.slippage,
       launch: launch && toSwapLaunchQuote(launch),
       firstStage: firstStage && toSwapFirstStageQuote(firstStage),
+      // The caller's, should a middleware's adjusted params leave it out: the
+      // router then plans without it, and the composer adds every extra fee
+      signerType: adjustedParams.signerType ?? params.signerType ?? 'ed25519',
       createdAt: Date.now(),
     }
   }
@@ -452,8 +473,19 @@ export class RouterClient {
     signer: TransactionSigner | SignerFunction
     /** Optional note field for the user-signed input transaction (payment or asset transfer) */
     note?: Uint8Array
+    /**
+     * The kind of key `address` signs with. Defaults to the quote's
+     * `signerType`: what `newQuote()` was asked for, or `'falcon'` when a
+     * `fetchQuote()` response echoes it. Pass it with a `fetchQuote()`
+     * response, which a router that doesn't support Falcon signers leaves
+     * without it. For `'falcon'`, the composer adds the extra fees the
+     * router's transactions don't include.
+     */
+    signerType?: SignerType
   }): Promise<SwapComposer> {
     const { quote, address, slippage, signer, note } = config
+    const signerType: SignerType =
+      config.signerType ?? quote.signerType ?? 'ed25519'
 
     // A launch quote prices the curve on the slippage it was fetched with, so
     // executing at a different slippage makes the quoted output inaccurate
@@ -482,6 +514,10 @@ export class RouterClient {
       signer,
       middleware: this.middleware,
       note,
+      signerType,
+      // Execute's word, not the quote's: a router mid-update can quote with
+      // the echo and build without the extra fees
+      signerFeesIncluded: swapResponse.signerType === 'falcon',
       debugLevel: this.config.debugLevel,
     })
 

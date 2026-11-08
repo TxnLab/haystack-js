@@ -426,7 +426,13 @@ async adjustQuoteParams(params: FetchQuoteParams): Promise<FetchQuoteParams> {
 }
 ```
 
-### 3. Additional Best Practices
+### 3. Keep the Caller's Params and Leave Falcon Fees to the SDK
+
+Return `{ ...params, ... }` from `adjustQuoteParams()` rather than a new object, so the caller's other params reach the router. A dropped `signerType`, for example, makes the router plan and build for an ed25519 signer.
+
+Don't add a Falcon signer's extra fees to the transactions you return from `beforeSwap()` or `afterSwap()`. The `SwapComposer` counts every transaction sent from the swap's `address` and adds 0.002 ALGO for each to the swap's input transfer when the account is a Falcon signer (`context.quote.signerType === 'falcon'`). Raising your own fees too charges the user twice.
+
+### 4. Additional Best Practices
 - **Minimize transactions**: Only add when absolutely necessary
 - **Cache queries**: Avoid redundant smart contract calls
 - **Handle errors**: Return empty arrays to avoid breaking swaps

@@ -209,6 +209,36 @@ if (quote.firstStage) {
 
 Without `address`, the swap is built without First Stage's calls, which fails for a frozen holding. Don't use a First Stage middleware (such as `@firststage/deflex-middleware`) with the router: its calls and the router's would be added twice, and the group fails. This applies to ORDER_ROUTER v4 swaps, and is on for API keys by default; contact TxnLab if your key's integration still wraps these swaps itself.
 
+### Falcon (Post-Quantum) Accounts
+
+A transaction signed with a Falcon-1024 key (passkey accounts, Pera and Lute quantum accounts) costs 3 fee units instead of 1, so the swap group's fees must cover 0.002 ALGO more for each transaction the account signs. Pass `signerType: 'falcon'`:
+
+```typescript
+import { getSignatureType } from '@txnlab/use-wallet'
+
+const quote = await router.newQuote({
+  fromASAID: 0,
+  toASAID: 31566704,
+  amount: 1_000_000,
+  address: activeAddress,
+  signerType:
+    getSignatureType(activeAccount.emptySignature) === 'pqsig'
+      ? 'falcon'
+      : 'ed25519',
+})
+```
+
+The router includes the extra in the fees of the transactions it builds, and the `SwapComposer` adds it for the ones it or your code adds: app opt-ins, middleware transactions, `addTransaction()` and `addMethodCall()` calls sent from `address`. It all goes on the fee of the swap's input transfer, which the account pays, before the group ID is assigned, so no transaction is added. `buildGroup()`'s fees and `getSummary().totalFees` include it.
+
+`newSwap()` reads whether the router's transactions include it from the router's response to the swap request (its `signerType`), not from the quote. When they don't (a router that doesn't support it, or one mid-update), the composer adds it for those too.
+
+With `fetchQuote()`, pass `signerType` to `newSwap()` as well. A router that doesn't support Falcon signers returns a quote that doesn't say it was requested for one, so the composer would otherwise compose for ed25519:
+
+```typescript
+const raw = await router.fetchQuote({ ...params, signerType: 'falcon' })
+const swap = await router.newSwap({ quote: raw, address, slippage, signer, signerType: 'falcon' })
+```
+
 ### Transaction Signing
 
 The SDK supports both standard `algosdk.TransactionSigner` and ARC-1 compliant signer functions.
@@ -472,6 +502,7 @@ async newQuote(params: FetchQuoteParams): Promise<SwapQuote>
 | `maxDepth`          | Maximum swap hops                          | `number`                          | `4`             |
 | `optIn`             | Override auto opt-in behavior              | `boolean`                         | `undefined`     |
 | `slippage`          | Slippage % you will execute with, in [0, 100); required for accurate launch token quotes | `number` | `undefined` |
+| `signerType`        | Key type `address` signs with; `'falcon'` adds a [Falcon signer's extra fees](#falcon-post-quantum-accounts) | `'ed25519' \| 'falcon'` | `'ed25519'` |
 
 #### RouterClient.newSwap()
 
@@ -488,6 +519,7 @@ async newSwap(config: SwapComposerConfig): Promise<SwapComposer>
 | `slippage` | Slippage tolerance as percentage (e.g., 1 for 1%) | `number`                                                                                                               |
 | `signer`   | Transaction signer function                       | `algosdk.TransactionSigner \| ((txnGroup: Transaction[], indexesToSign: number[]) => Promise<(Uint8Array \| null)[]>)` |
 | `note`     | Optional note for the user-signed input transaction (for tracking purposes) | `Uint8Array`                                                                                             |
+| `signerType` | Optional key type `address` signs with (default: the quote's, else `'ed25519'`). Pass it with a `fetchQuote()` response | `'ed25519' \| 'falcon'` |
 
 #### RouterClient.needsAssetOptIn()
 
@@ -515,6 +547,7 @@ Plain object returned by [`newQuote()`](#routerclientnewquote). Extends the raw 
 | `address`   | User address (if provided)          | `string \| undefined` |
 | `slippage`  | Slippage sent with the quote request (if provided) | `number \| undefined` |
 | `launch`    | Bonding-curve details for a pre-bonding launch token (amounts as `bigint`) | `SwapLaunchQuote \| undefined` |
+| `signerType` | Key type the quote was requested for (`'ed25519'` when none was) | `'ed25519' \| 'falcon' \| undefined` |
 | `createdAt` | Timestamp when quote was created    | `number`              |
 
 **All properties from API response:**
