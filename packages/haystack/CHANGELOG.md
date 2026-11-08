@@ -1,3 +1,10 @@
+# [3.5.0](https://github.com/TxnLab/haystack-js/compare/v3.4.0...v3.5.0) (2026-11-08)
+
+
+### Features
+
+* **client:** add a Falcon signer's extra fees with signerType ([#43](https://github.com/TxnLab/haystack-js/issues/43)) ([df476a9](https://github.com/TxnLab/haystack-js/commit/df476a94c6b48cedbc64531c4ebde6c19f3ec6d7))
+
 # [3.4.0](https://github.com/TxnLab/haystack-js/compare/v3.3.0...v3.4.0) (2026-11-03)
 
 
