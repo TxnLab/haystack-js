@@ -68,6 +68,20 @@ export type Config = Omit<
 export type QuoteType = 'fixed-input' | 'fixed-output'
 
 /**
+ * The kind of key the swapping account signs with
+ *
+ * - `'ed25519'`: an ordinary Algorand account (the default)
+ * - `'falcon'`: a Falcon-1024 (post-quantum) account, such as a passkey
+ *   account or a Pera or Lute quantum account. Each transaction it signs costs
+ *   3 fee units (0.003 ALGO) instead of 1, which the swap group's fees must
+ *   cover.
+ *
+ * A rekeyed account signs with its auth address's key. With use-wallet, an
+ * account is Falcon when `getSignatureType(account.emptySignature) === 'pqsig'`.
+ */
+export type SignerType = 'ed25519' | 'falcon'
+
+/**
  * Parameters for requesting a swap quote from the Haystack Router API (raw API method)
  */
 export interface FetchQuoteParams {
@@ -113,6 +127,22 @@ export interface FetchQuoteParams {
    * the slippage. Other quotes ignore it.
    */
   readonly slippage?: number
+
+  /**
+   * The kind of key the swapping account signs with (default: `'ed25519'`)
+   *
+   * Pass `'falcon'` for a Falcon (post-quantum) account. The router then
+   * includes the extra fee of every transaction it builds for the account to
+   * sign, and the SwapComposer adds it for the transactions it adds (app
+   * opt-ins, middleware, `addTransaction()`, `addMethodCall()`), all in the
+   * fee of the swap's input transfer, which the account pays. The router
+   * can't tell from the address: an unused Falcon account looks like any
+   * other.
+   *
+   * With `fetchQuote()`, pass it to `newSwap()` too: a response from a router
+   * that doesn't support it doesn't say the quote was for a Falcon signer.
+   */
+  readonly signerType?: SignerType
 
   /**
    * ⚠️ **ADVANCED USE ONLY - NON-COMPOSABLE SWAPS** ⚠️
@@ -325,6 +355,14 @@ export interface FetchQuoteResponse {
    * holding keeps (fixed-input), or all the input holding sends (fixed-output).
    */
   readonly firstStage?: FirstStageQuote
+  /**
+   * `'falcon'` when the quote was requested for a Falcon signer and the
+   * router supports it. Absent otherwise, including from a router that
+   * doesn't support Falcon signers yet. Whether the swap's transactions
+   * include the extra fees is the execute response's `signerType`
+   * ({@link FetchSwapTxnsResponse}), which `newSwap()` reads.
+   */
+  readonly signerType?: 'falcon'
 }
 
 /**
@@ -334,7 +372,7 @@ export interface FetchQuoteResponse {
  */
 export type SwapQuote = Omit<
   FetchQuoteResponse,
-  'quote' | 'launch' | 'firstStage'
+  'quote' | 'launch' | 'firstStage' | 'signerType'
 > & {
   /**
    * The quoted output amount or input amount (coerced to bigint)
@@ -358,6 +396,13 @@ export type SwapQuote = Omit<
 
   /** First Stage taxes, present only when the swap wraps a First Stage taxed token's frozen holding */
   readonly firstStage?: SwapFirstStageQuote
+
+  /**
+   * The kind of key the quote's account signs with: what `newQuote()` was
+   * asked for (`'ed25519'` when nothing was), or `'falcon'` copied from a
+   * `fetchQuote()` response that echoes it
+   */
+  readonly signerType?: SignerType
 
   /** Timestamp when the quote was created (in milliseconds) */
   readonly createdAt: number
@@ -421,6 +466,13 @@ export interface FetchSwapTxnsBody {
 export interface FetchSwapTxnsResponse {
   /** Array of transaction data */
   readonly txns: SwapTransaction[]
+  /**
+   * `'falcon'` when the transactions' fees include a Falcon signer's extra
+   * fees for every transaction the account signs. Absent otherwise, even when
+   * the quote echoed `signerType` (a router mid-update can build without
+   * them): a Falcon signer's group then needs them all added.
+   */
+  readonly signerType?: 'falcon'
 }
 
 /**

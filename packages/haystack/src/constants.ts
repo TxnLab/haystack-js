@@ -51,5 +51,11 @@ export const DEFAULT_AUTO_OPT_IN = false
 /** Default debug level (no debug logging) */
 export const DEFAULT_DEBUG_LEVEL = 'none' as const
 
+/**
+ * What a Falcon (post-quantum) signature adds to its transaction's fee, in
+ * microAlgos: algod charges a transaction it signs 3 fee units instead of 1
+ */
+export const FALCON_EXTRA_FEE = 2_000n
+
 /** Default number of rounds to wait for transaction confirmation */
 export const DEFAULT_CONFIRMATION_ROUNDS = 10
