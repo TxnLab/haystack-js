@@ -334,23 +334,8 @@ export class SwapComposer {
    * @returns This composer instance for chaining
    * @throws Error if the composer is not in the BUILDING status
    * @throws Error if the maximum group size is exceeded
-   * @throws Error if attempting to compose with a non-composable swap (Tinyman v1)
    */
   addTransaction(transaction: Transaction, signer = this.defaultSigner): this {
-    // Check if the quote uses Tinyman v1 (non-composable protocol)
-    const usesTinymanV1 =
-      this.quote.flattenedRoute?.['Tinyman'] !== undefined &&
-      this.quote.flattenedRoute['Tinyman'] > 0
-
-    if (usesTinymanV1) {
-      throw new Error(
-        'Cannot add transactions to a swap group that uses Tinyman v1. ' +
-          'Tinyman v1 produces non-composable transaction groups. ' +
-          'Asset opt-ins, opt-outs, and other transactions must be sent in separate groups. ' +
-          'If you need to support Tinyman v1 swaps, you must handle multi-group coordination manually.',
-      )
-    }
-
     this.atc.addTransaction({ txn: transaction, signer })
     this.trackSignerFee(transaction.sender, transaction)
     return this
@@ -366,23 +351,8 @@ export class SwapComposer {
    * @param methodCall - The method call to add
    * @param signer - The signer to use for the method call (defaults to constructor signer)
    * @returns This composer instance for chaining
-   * @throws Error if attempting to compose with a non-composable swap (Tinyman v1)
    */
   addMethodCall(methodCall: MethodCall, signer = this.defaultSigner): this {
-    // Check if the quote uses Tinyman v1 (non-composable protocol)
-    const usesTinymanV1 =
-      this.quote.flattenedRoute?.['Tinyman'] !== undefined &&
-      this.quote.flattenedRoute['Tinyman'] > 0
-
-    if (usesTinymanV1) {
-      throw new Error(
-        'Cannot add method calls to a swap group that uses Tinyman v1. ' +
-          'Tinyman v1 produces non-composable transaction groups. ' +
-          'Asset opt-ins, opt-outs, and other transactions must be sent in separate groups. ' +
-          'If you need to support Tinyman v1 swaps, you must handle multi-group coordination manually.',
-      )
-    }
-
     this.atc.addMethodCall({
       ...methodCall,
       signer: methodCall.signer ?? signer,

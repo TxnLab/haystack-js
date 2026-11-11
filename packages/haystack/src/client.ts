@@ -11,7 +11,6 @@ import {
   DEFAULT_FEE_BPS,
   DEFAULT_MAX_DEPTH,
   DEFAULT_MAX_GROUP_SIZE,
-  DEPRECATED_PROTOCOLS,
   MAX_FEE_BPS,
 } from './constants'
 import { toSwapFirstStageQuote } from './firststage'
@@ -155,7 +154,6 @@ export class RouterClient {
       address,
       slippage,
       signerType,
-      _allowNonComposableSwaps = false,
     } = params
 
     if (slippage !== undefined) {
@@ -171,21 +169,6 @@ export class RouterClient {
         `Invalid signerType: ${String(signerType)}. Must be 'ed25519' or 'falcon'`,
       )
     }
-
-    // Validate incompatible parameter combinations
-    if (_allowNonComposableSwaps && (optIn === true || this.config.autoOptIn)) {
-      throw new Error(
-        'Cannot use _allowNonComposableSwaps with optIn or autoOptIn. ' +
-          'When allowing non-composable swaps (Tinyman v1), you must handle ' +
-          'asset opt-ins and opt-outs in separate transaction groups.',
-      )
-    }
-
-    // Always disable the deprecated protocols (Tinyman v1), unless
-    // _allowNonComposableSwaps opts into Tinyman v1
-    const allDisabledProtocols = _allowNonComposableSwaps
-      ? [...new Set(disabledProtocols)]
-      : [...new Set([...DEPRECATED_PROTOCOLS, ...disabledProtocols])]
 
     let includeOptIn = optIn
     if (includeOptIn === undefined && this.config.autoOptIn) {
@@ -211,7 +194,10 @@ export class RouterClient {
     url.searchParams.append('toASAID', BigInt(toASAID).toString())
     url.searchParams.append('amount', BigInt(amount).toString())
     url.searchParams.append('type', type)
-    url.searchParams.append('disabledProtocols', allDisabledProtocols.join(','))
+    url.searchParams.append(
+      'disabledProtocols',
+      [...new Set(disabledProtocols)].join(','),
+    )
     url.searchParams.append('maxGroupSize', maxGroupSize.toString())
     url.searchParams.append('maxDepth', maxDepth.toString())
 
@@ -370,15 +356,6 @@ export class RouterClient {
    * ```
    */
   async newQuote(params: FetchQuoteParams): Promise<SwapQuote> {
-    // Block usage of _allowNonComposableSwaps with newQuote (middleware path)
-    if (params._allowNonComposableSwaps) {
-      throw new Error(
-        'The _allowNonComposableSwaps parameter is not supported with newQuote(). ' +
-          'This parameter is only available with fetchQuote() for advanced use cases. ' +
-          'The newQuote() method is designed for composable swaps with middleware support.',
-      )
-    }
-
     // Apply middleware transformations to quote params
     let adjustedParams = { ...params }
 

@@ -101,7 +101,7 @@ The CLI will:
    USD In: $1.00
    USD Out: $0.99
    Route paths: 2
-   Flattened route: { 'Tinyman': 0.6, 'Folks': 0.4 }
+   Flattened route: { 'tinyman-V2': 0.6, 'folks': 0.4 }
 
 🔄 Executing swap...
 ✨ Swap completed successfully!

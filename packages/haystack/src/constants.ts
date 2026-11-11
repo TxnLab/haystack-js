@@ -12,8 +12,11 @@ export enum Protocol {
 }
 
 /**
- * Deprecated protocols that are automatically excluded from routing
+ * Protocols the SDK used to exclude from routing automatically
  *
+ * @deprecated The router no longer supports Tinyman v1, so the SDK no longer
+ * excludes it and this constant is unused. It will be removed in the next
+ * major version.
  * @internal
  */
 export const DEPRECATED_PROTOCOLS = ['Tinyman'] as const

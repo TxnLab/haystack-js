@@ -145,30 +145,12 @@ export interface FetchQuoteParams {
   readonly signerType?: SignerType
 
   /**
-   * ⚠️ **ADVANCED USE ONLY - NON-COMPOSABLE SWAPS** ⚠️
+   * Formerly re-enabled Tinyman v1, which produces non-composable swap groups.
    *
-   * When set to `true`, removes the automatic exclusion of Tinyman v1 from routing,
-   * allowing the API to route swaps through protocols that produce **non-composable**
-   * transaction groups.
-   *
-   * **Critical Limitations:**
-   * - You CANNOT add transactions before/after swap transactions in the atomic group
-   * - Asset opt-ins and opt-outs MUST be sent in separate transaction groups
-   * - The SwapComposer will throw errors if you attempt to compose additional transactions
-   * - This parameter CANNOT be used with `optIn: true` or `config.autoOptIn: true`
-   * - This parameter is NOT supported in `newQuote()` (only `fetchQuote()`)
-   *
-   * **When to use this:**
-   * Only use this if you have built custom infrastructure to:
-   * 1. Detect when the route uses non-composable protocols (Tinyman v1)
-   * 2. Handle opt-in/opt-out transactions separately from the swap group
-   * 3. Coordinate multiple transaction groups instead of composing a single atomic group
-   *
-   * **This breaks the standard SDK workflow.** The default behavior of always excluding
-   * Tinyman v1 ensures all swaps are composable, which is the recommended approach.
-   *
-   * @default false
-   * @internal This is not a supported public API feature
+   * @deprecated The router no longer supports Tinyman v1, so every route is
+   * composable and this option is ignored. It will be removed in the next
+   * major version.
+   * @internal
    */
   readonly _allowNonComposableSwaps?: boolean
 }
