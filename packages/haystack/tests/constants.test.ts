@@ -32,8 +32,8 @@ describe('constants', () => {
     })
   })
 
-  describe('DEPRECATED_PROTOCOLS', () => {
-    it('should include Tinyman but not Humble', () => {
+  describe('DEPRECATED_PROTOCOLS (deprecated, unused)', () => {
+    it('should keep its value until the next major version', () => {
       expect(DEPRECATED_PROTOCOLS).toContain('Tinyman')
       expect(DEPRECATED_PROTOCOLS).not.toContain('Humble')
     })

@@ -54,7 +54,7 @@ The public API is whatever `src/index.ts` re-exports: client, composer, constant
 
 ### Invariants and gotchas
 
-- **Tinyman v1 is non-composable.** `DEPRECATED_PROTOCOLS` (`Tinyman`, `Humble`) are always added to `disabledProtocols`. `_allowNonComposableSwaps` re-enables Tinyman v1 only through `fetchQuote()`, can't be combined with opt-in, and is rejected by `newQuote()`. `addTransaction`/`addMethodCall` throw if `quote.flattenedRoute.Tinyman > 0`.
+- **Tinyman v1 is gone.** The router dropped it and routes through Humble again, so the SDK disables no protocols by default. `DEPRECATED_PROTOCOLS` and `FetchQuoteParams._allowNonComposableSwaps` are kept as deprecated no-ops so removing them isn't breaking. Delete both in the next major.
 - `SwapComposerStatus` is cast directly from the ATC status, so its member order must match algosdk's `AtomicTransactionComposerStatus`.
 - `Logger` is a static singleton. Each `RouterClient`/`SwapComposer` constructor overwrites the global level. Its `sanitize()` redacts `apiKey`, `algodToken`, signature values and `txnPayload`. Keep that redaction when you add log calls.
 - Asset and app IDs, and amounts, are `bigint` in `QuoteContext`/`SwapContext`/`SwapQuote`. The raw API response uses numbers and strings.

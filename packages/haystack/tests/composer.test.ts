@@ -326,34 +326,7 @@ describe('SwapComposer', () => {
       )
     })
 
-    it('should throw error when trying to compose with Tinyman v1 swap', () => {
-      const tinymanQuote: Partial<FetchQuoteResponse> = {
-        fromASAID: 0,
-        toASAID: 31566704,
-        quote: '1000000',
-        route: [],
-        txnPayload: { iv: 'test-iv', data: 'test-data' },
-        requiredAppOptIns: [],
-        flattenedRoute: {
-          Tinyman: 1.0, // 100% Tinyman v1 routing
-        },
-      }
-
-      const composer = new SwapComposer({
-        quote: tinymanQuote as FetchQuoteResponse,
-        swapTxns: [createMockSwapTxn()],
-        algodClient: mockAlgodClient,
-        address: validAddress,
-        signer: async (txns: algosdk.Transaction[]) =>
-          txns.map(() => new Uint8Array(0)),
-      })
-
-      expect(() => composer.addTransaction(createMockTransaction())).toThrow(
-        'Cannot add transactions to a swap group that uses Tinyman v1',
-      )
-    })
-
-    it('should allow adding transactions when NOT using Tinyman v1', () => {
+    it('should allow adding transactions when the quote has a flattenedRoute', () => {
       const nonTinymanQuote: Partial<FetchQuoteResponse> = {
         fromASAID: 0,
         toASAID: 31566704,
@@ -588,54 +561,7 @@ describe('SwapComposer', () => {
       expect(result).toBe(composer)
     })
 
-    it('should throw error when trying to add method call to Tinyman v1 swap', () => {
-      const tinymanQuote: Partial<FetchQuoteResponse> = {
-        fromASAID: 0,
-        toASAID: 31566704,
-        quote: '1000000',
-        route: [],
-        txnPayload: { iv: 'test-iv', data: 'test-data' },
-        requiredAppOptIns: [],
-        flattenedRoute: {
-          Tinyman: 1.0, // 100% Tinyman v1 routing
-        },
-      }
-
-      const composer = new SwapComposer({
-        quote: tinymanQuote as FetchQuoteResponse,
-        swapTxns: [createMockSwapTxn()],
-        algodClient: mockAlgodClient,
-        address: validAddress,
-        signer: async () => [new Uint8Array([1])],
-      })
-
-      const methodCall = {
-        appID: 123456,
-        method: new algosdk.ABIMethod({
-          name: 'test',
-          args: [],
-          returns: { type: 'void' },
-        }),
-        sender: validAddress,
-        suggestedParams: {
-          fee: 1000,
-          firstValid: 1000,
-          lastValid: 2000,
-          genesisID: 'testnet-v1.0',
-          genesisHash: Buffer.from(
-            'SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=',
-            'base64',
-          ),
-          minFee: 1000,
-        },
-      }
-
-      expect(() => composer.addMethodCall(methodCall)).toThrow(
-        'Cannot add method calls to a swap group that uses Tinyman v1',
-      )
-    })
-
-    it('should allow adding method calls when NOT using Tinyman v1', () => {
+    it('should allow adding method calls when the quote has a flattenedRoute', () => {
       const nonTinymanQuote: Partial<FetchQuoteResponse> = {
         fromASAID: 0,
         toASAID: 31566704,

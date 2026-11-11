@@ -175,13 +175,13 @@ describe('RouterClient', () => {
       expect(callUrl).toContain('toASAID=31566704')
       expect(callUrl).toContain('amount=1000000')
       expect(callUrl).toContain('type=fixed-output')
-      expect(callUrl).toContain('disabledProtocols=Tinyman%2CTinymanV2')
+      expect(callUrl).toContain('disabledProtocols=TinymanV2&')
       expect(callUrl).toContain('maxGroupSize=12')
       expect(callUrl).toContain('maxDepth=3')
       expect(callUrl).toContain('optIn=true')
     })
 
-    it('should include deprecated protocols in disabled list', async () => {
+    it('should not disable any protocols by default', async () => {
       const mockQuote: Partial<FetchQuoteResponse> = {
         fromASAID: 0,
         toASAID: 31566704,
@@ -200,8 +200,7 @@ describe('RouterClient', () => {
       })
 
       const callUrl = mockRequest.mock.calls?.[0]?.[0] as string
-      expect(callUrl).toContain('disabledProtocols=Tinyman&')
-      expect(callUrl).not.toContain('Humble')
+      expect(callUrl).toContain('disabledProtocols=&')
     })
 
     it('should use custom apiBaseUrl when provided', async () => {
@@ -527,17 +526,37 @@ describe('RouterClient', () => {
       })
     })
 
-    describe('_allowNonComposableSwaps parameter', () => {
-      it('should allow Tinyman v1 routing when _allowNonComposableSwaps is true', async () => {
-        const mockQuote: Partial<FetchQuoteResponse> = {
-          fromASAID: 0,
-          toASAID: 31566704,
-          quote: '1000000',
-          route: [],
-          txnPayload: { iv: 'test-iv', data: 'test-data' },
-          requiredAppOptIns: [],
-        }
+    describe('_allowNonComposableSwaps parameter (deprecated)', () => {
+      const mockQuote: Partial<FetchQuoteResponse> = {
+        fromASAID: 0,
+        toASAID: 31566704,
+        quote: '1000000',
+        route: [],
+        txnPayload: { iv: 'test-iv', data: 'test-data' },
+        requiredAppOptIns: [],
+      }
 
+      it.each([true, false])(
+        'should not change disabledProtocols when set to %s',
+        async (value) => {
+          mockRequest.mockResolvedValue(mockQuote)
+
+          await client.fetchQuote({
+            fromASAID: 0,
+            toASAID: 31566704,
+            amount: 1_000_000,
+            disabledProtocols: [Protocol.Pact],
+            _allowNonComposableSwaps: value,
+          })
+
+          const callUrl = mockRequest.mock.calls?.[0]?.[0] as string
+          expect(callUrl).toContain('disabledProtocols=Pact&')
+          expect(callUrl).not.toContain('Tinyman')
+          expect(callUrl).not.toContain('_allowNonComposableSwaps')
+        },
+      )
+
+      it('should not throw when combined with optIn: true', async () => {
         mockRequest.mockResolvedValue(mockQuote)
 
         await client.fetchQuote({
@@ -545,58 +564,19 @@ describe('RouterClient', () => {
           toASAID: 31566704,
           amount: 1_000_000,
           _allowNonComposableSwaps: true,
+          optIn: true,
         })
 
         const callUrl = mockRequest.mock.calls?.[0]?.[0] as string
-        // Should NOT include Tinyman when _allowNonComposableSwaps is true
-        expect(callUrl).not.toContain('Tinyman')
-        expect(callUrl).not.toContain('Humble')
+        expect(callUrl).toContain('optIn=true')
       })
 
-      it('should include deprecated protocols by default when _allowNonComposableSwaps is false', async () => {
-        const mockQuote: Partial<FetchQuoteResponse> = {
-          fromASAID: 0,
-          toASAID: 31566704,
-          quote: '1000000',
-          route: [],
-          txnPayload: { iv: 'test-iv', data: 'test-data' },
-          requiredAppOptIns: [],
-        }
-
-        mockRequest.mockResolvedValue(mockQuote)
-
-        await client.fetchQuote({
-          fromASAID: 0,
-          toASAID: 31566704,
-          amount: 1_000_000,
-          _allowNonComposableSwaps: false,
-        })
-
-        const callUrl = mockRequest.mock.calls?.[0]?.[0] as string
-        // Should include deprecated protocols
-        expect(callUrl).toContain('Tinyman')
-        expect(callUrl).not.toContain('Humble')
-      })
-
-      it('should throw error when _allowNonComposableSwaps is used with optIn: true', async () => {
-        await expect(
-          client.fetchQuote({
-            fromASAID: 0,
-            toASAID: 31566704,
-            amount: 1_000_000,
-            _allowNonComposableSwaps: true,
-            optIn: true,
-          }),
-        ).rejects.toThrow(
-          'Cannot use _allowNonComposableSwaps with optIn or autoOptIn',
-        )
-      })
-
-      it('should throw error when _allowNonComposableSwaps is used with autoOptIn enabled', async () => {
+      it('should not throw when autoOptIn is enabled', async () => {
         const clientWithAutoOptIn = new RouterClient({
           ...validConfig,
           autoOptIn: true,
         })
+        mockRequest.mockResolvedValue(mockQuote)
 
         await expect(
           clientWithAutoOptIn.fetchQuote({
@@ -605,57 +585,7 @@ describe('RouterClient', () => {
             amount: 1_000_000,
             _allowNonComposableSwaps: true,
           }),
-        ).rejects.toThrow(
-          'Cannot use _allowNonComposableSwaps with optIn or autoOptIn',
-        )
-      })
-
-      it('should allow _allowNonComposableSwaps when optIn is false', async () => {
-        const mockQuote: Partial<FetchQuoteResponse> = {
-          fromASAID: 0,
-          toASAID: 31566704,
-          quote: '1000000',
-          route: [],
-          txnPayload: { iv: 'test-iv', data: 'test-data' },
-          requiredAppOptIns: [],
-        }
-
-        mockRequest.mockResolvedValue(mockQuote)
-
-        await client.fetchQuote({
-          fromASAID: 0,
-          toASAID: 31566704,
-          amount: 1_000_000,
-          _allowNonComposableSwaps: true,
-          optIn: false,
-        })
-
-        const callUrl = mockRequest.mock.calls?.[0]?.[0] as string
-        expect(callUrl).not.toContain('Tinyman')
-        expect(callUrl).toContain('optIn=false')
-      })
-
-      it('should allow _allowNonComposableSwaps when optIn is undefined and autoOptIn is disabled', async () => {
-        const mockQuote: Partial<FetchQuoteResponse> = {
-          fromASAID: 0,
-          toASAID: 31566704,
-          quote: '1000000',
-          route: [],
-          txnPayload: { iv: 'test-iv', data: 'test-data' },
-          requiredAppOptIns: [],
-        }
-
-        mockRequest.mockResolvedValue(mockQuote)
-
-        await client.fetchQuote({
-          fromASAID: 0,
-          toASAID: 31566704,
-          amount: 1_000_000,
-          _allowNonComposableSwaps: true,
-        })
-
-        const callUrl = mockRequest.mock.calls?.[0]?.[0] as string
-        expect(callUrl).not.toContain('Tinyman')
+        ).resolves.toBeDefined()
       })
     })
   })
@@ -919,17 +849,28 @@ describe('RouterClient', () => {
       expect(callUrl).toContain('toASAID=31566704')
     })
 
-    it('should throw error when _allowNonComposableSwaps is used with newQuote', async () => {
-      await expect(
-        client.newQuote({
-          fromASAID: 0,
-          toASAID: 31566704,
-          amount: 1_000_000,
-          _allowNonComposableSwaps: true,
-        }),
-      ).rejects.toThrow(
-        'The _allowNonComposableSwaps parameter is not supported with newQuote()',
-      )
+    it('should ignore the deprecated _allowNonComposableSwaps parameter', async () => {
+      const mockQuoteResponse: Partial<FetchQuoteResponse> = {
+        fromASAID: 0,
+        toASAID: 31566704,
+        quote: '5000000',
+        type: 'fixed-input',
+        route: [],
+        txnPayload: { iv: 'test-iv', data: 'test-data' },
+        requiredAppOptIns: [],
+      }
+
+      mockRequest.mockResolvedValue(mockQuoteResponse)
+
+      await client.newQuote({
+        fromASAID: 0,
+        toASAID: 31566704,
+        amount: 1_000_000,
+        _allowNonComposableSwaps: true,
+      })
+
+      const callUrl = mockRequest.mock.calls?.[0]?.[0] as string
+      expect(callUrl).toContain('disabledProtocols=&')
     })
   })
 
