@@ -49,7 +49,7 @@ This is a pnpm workspace monorepo. All packages and examples share dependencies 
 
 ### Prerequisites
 
-- **Haystack Router API Key** - An API key is included for free tier usage (60 requests/min). For production rate limits, request a key from [support@txnlab.dev](mailto:support@txnlab.dev).
+- **Haystack Router API Key** - An API key is included for free tier usage (60 requests/min). For production rate limits, request a key: see [Getting a key](https://txnlab.gitbook.io/haystack-dev/getting-started/api-keys#getting-a-key) for what to send us. Don't use the router for prices: use the [Haystack API](https://txnlab.gitbook.io/haystack-dev/haystack-api/assets#prices).
 - algosdk 3.0.0 or later (peer dependency)
 - Node.js `^22.22.2 || >=24.15`
 - pnpm 10.20.0 or later
