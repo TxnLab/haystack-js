@@ -10,15 +10,18 @@ TypeScript/JavaScript SDK for [Haystack Order Router](https://txnlab.gitbook.io/
 
 ## Prerequisites
 
-- **Haystack Router API Key** - A free tier key is included below for development and testing (60 requests/min). For production rate limits, request a dedicated key from [support@txnlab.dev](mailto:support@txnlab.dev).
+- **Haystack Router API Key** - A free tier key is included below for development and testing (60 requests/min). For production rate limits, request a dedicated key: see [Getting a key](https://txnlab.gitbook.io/haystack-dev/getting-started/api-keys#getting-a-key) for what to send us.
 - algosdk 3.0.0 or later
+
+> [!CAUTION]
+> **Don't call `newQuote()` to show prices.** Each quote searches routes across every pool for one exact trade, so it is slow and uses up your rate limit. Quote only for a swap a user is about to make. For prices, use the [Haystack API](https://txnlab.gitbook.io/haystack-dev/haystack-api/assets#prices) (`GET /api/assets/prices`, or its WebSocket for live updates), which is far faster.
 
 ### API Key Tiers
 
 | Tier | Key | Rate Limit | Use Case |
 | --- | --- | --- | --- |
 | **Free** | `hay_pk_4zhj33wahuxfplteyif5xpcgnm` | 60 requests/min | Development, testing, low-volume integrations |
-| **Production** | Request from [support@txnlab.dev](mailto:support@txnlab.dev) | Higher limits | Production applications |
+| **Production** | Email [support@txnlab.dev](mailto:support@txnlab.dev) with the details in [Getting a key](https://txnlab.gitbook.io/haystack-dev/getting-started/api-keys#getting-a-key) | Higher limits | Production applications |
 
 The previous free key, `1b72df7e-1131-4449-8ce1-29b79dd3f51e`, is deprecated: its limit falls to 10 requests/min between December 1, 2026 and March 1, 2027, and it stops working on April 1, 2027.
 
