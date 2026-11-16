@@ -40,14 +40,14 @@ import type {
  * @example
  * ```typescript
  * const router = new RouterClient({
- *   apiKey: 'hay_pk_4zhj33wahuxfplteyif5xpcgnm', // Free tier (60 requests/min)
+ *   apiKey: 'hay_pk_4zhj33wahuxfplteyif5xpcgnm', // Free tier (30 requests/min)
  * })
  * ```
  *
  * @example
  * ```typescript
  * const router = new RouterClient({
- *   apiKey: 'hay_pk_4zhj33wahuxfplteyif5xpcgnm', // Free tier (60 requests/min)
+ *   apiKey: 'hay_pk_4zhj33wahuxfplteyif5xpcgnm', // Free tier (30 requests/min)
  *   apiBaseUrl: 'https://hayrouter.txnlab.dev',
  *   algodUri: 'https://mainnet-api.4160.nodely.dev/',
  *   algodToken: '',

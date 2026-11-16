@@ -10,7 +10,7 @@ TypeScript/JavaScript SDK for [Haystack Order Router](https://txnlab.gitbook.io/
 
 ## Prerequisites
 
-- **Haystack Router API Key** - A free tier key is included below for development and testing (60 requests/min). For production rate limits, request a dedicated key: see [Getting a key](https://txnlab.gitbook.io/haystack-dev/getting-started/api-keys#getting-a-key) for what to send us.
+- **Haystack Router API Key** - A free tier key is included below for development and testing (30 requests/min per IP). For production rate limits, request a dedicated key: see [Getting a key](https://txnlab.gitbook.io/haystack-dev/getting-started/api-keys#getting-a-key) for what to send us.
 - algosdk 3.0.0 or later
 
 > [!CAUTION]
@@ -20,7 +20,7 @@ TypeScript/JavaScript SDK for [Haystack Order Router](https://txnlab.gitbook.io/
 
 | Tier | Key | Rate Limit | Use Case |
 | --- | --- | --- | --- |
-| **Free** | `hay_pk_4zhj33wahuxfplteyif5xpcgnm` | 60 requests/min | Development, testing, low-volume integrations |
+| **Free** | `hay_pk_4zhj33wahuxfplteyif5xpcgnm` | 30 requests/min per IP | Development, testing, low-volume integrations |
 | **Production** | Email [support@txnlab.dev](mailto:support@txnlab.dev) with the details in [Getting a key](https://txnlab.gitbook.io/haystack-dev/getting-started/api-keys#getting-a-key) | Higher limits | Production applications |
 
 The previous free key, `1b72df7e-1131-4449-8ce1-29b79dd3f51e`, is deprecated: its limit falls to 10 requests/min between December 1, 2026 and March 1, 2027, and it stops working on April 1, 2027.
@@ -45,7 +45,7 @@ const { activeAddress, transactionSigner } = useWallet()
 
 // Initialize the client
 const router = new RouterClient({
-  apiKey: 'hay_pk_4zhj33wahuxfplteyif5xpcgnm', // Free tier (60 requests/min)
+  apiKey: 'hay_pk_4zhj33wahuxfplteyif5xpcgnm', // Free tier (30 requests/min)
 })
 
 // Get a quote
@@ -77,12 +77,12 @@ import { RouterClient } from '@txnlab/haystack-router'
 
 // Basic initialization
 const router = new RouterClient({
-  apiKey: 'hay_pk_4zhj33wahuxfplteyif5xpcgnm', // Free tier (60 requests/min)
+  apiKey: 'hay_pk_4zhj33wahuxfplteyif5xpcgnm', // Free tier (30 requests/min)
 })
 
 // Custom Algod configuration
 const router = new RouterClient({
-  apiKey: 'hay_pk_4zhj33wahuxfplteyif5xpcgnm', // Free tier (60 requests/min)
+  apiKey: 'hay_pk_4zhj33wahuxfplteyif5xpcgnm', // Free tier (30 requests/min)
   algodUri: 'https://mainnet-api.4160.nodely.dev/',
   algodToken: '',
   algodPort: 443,
@@ -91,7 +91,7 @@ const router = new RouterClient({
 
 // Earn fees with the referral program
 const router = new RouterClient({
-  apiKey: 'hay_pk_4zhj33wahuxfplteyif5xpcgnm', // Free tier (60 requests/min)
+  apiKey: 'hay_pk_4zhj33wahuxfplteyif5xpcgnm', // Free tier (30 requests/min)
   referrerAddress: 'YOUR_ALGORAND_ADDRESS', // Earns 25% of swap fees
   feeBps: 15, // 0.15% fee (max: 300 = 3%)
 })
@@ -367,7 +367,7 @@ const myAsset = new MyAssetMiddleware({
 
 // Pass middleware to RouterClient
 const router = new RouterClient({
-  apiKey: 'hay_pk_4zhj33wahuxfplteyif5xpcgnm', // Free tier (60 requests/min)
+  apiKey: 'hay_pk_4zhj33wahuxfplteyif5xpcgnm', // Free tier (30 requests/min)
   middleware: [myAsset], // Middleware is applied automatically
 })
 
@@ -395,7 +395,7 @@ const autoOptOut = new AutoOptOutMiddleware({
 })
 
 const router = new RouterClient({
-  apiKey: 'hay_pk_4zhj33wahuxfplteyif5xpcgnm', // Free tier (60 requests/min)
+  apiKey: 'hay_pk_4zhj33wahuxfplteyif5xpcgnm', // Free tier (30 requests/min)
   middleware: [autoOptOut],
 })
 
@@ -416,7 +416,7 @@ If you're not using `autoOptIn: true`, you can manually check if opt-in is neede
 
 ```typescript
 const router = new RouterClient({
-  apiKey: 'hay_pk_4zhj33wahuxfplteyif5xpcgnm', // Free tier (60 requests/min)
+  apiKey: 'hay_pk_4zhj33wahuxfplteyif5xpcgnm', // Free tier (30 requests/min)
   autoOptIn: false, // Default if not provided
 })
 
