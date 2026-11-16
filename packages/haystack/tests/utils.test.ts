@@ -201,6 +201,120 @@ describe('request', () => {
     expect(result).toBeNull()
   })
 
+  describe('busy retry', () => {
+    const busy = (retryAfter?: string) => ({
+      ok: false,
+      status: 503,
+      statusText: 'Service Unavailable',
+      headers: new Headers(
+        retryAfter === undefined ? {} : { 'Retry-After': retryAfter },
+      ),
+      json: async () => {
+        throw new Error('Invalid JSON')
+      },
+      text: async () => 'quote not started: the router is busy\n',
+    })
+    const ok = (data: unknown) => ({ ok: true, json: async () => data })
+
+    beforeEach(() => {
+      vi.useFakeTimers()
+    })
+
+    afterEach(() => {
+      vi.useRealTimers()
+    })
+
+    it('retries a 503 once after its Retry-After', async () => {
+      global.fetch = vi
+        .fn()
+        .mockResolvedValueOnce(busy('1'))
+        .mockResolvedValueOnce(ok({ quote: '1' }))
+
+      const result = request('https://api.example.com/fetchQuote')
+      await vi.advanceTimersByTimeAsync(999)
+      expect(global.fetch).toHaveBeenCalledTimes(1)
+      await vi.advanceTimersByTimeAsync(1)
+
+      await expect(result).resolves.toEqual({ quote: '1' })
+      expect(global.fetch).toHaveBeenCalledTimes(2)
+    })
+
+    it('throws the 503 when the retry is busy too', async () => {
+      global.fetch = vi.fn().mockResolvedValue(busy('1'))
+
+      const result = request('https://api.example.com/fetchQuote')
+      const caught = result.catch((error: unknown) => error)
+      await vi.advanceTimersByTimeAsync(1000)
+
+      const error = await caught
+      expect(error).toBeInstanceOf(HTTPError)
+      expect((error as HTTPError).status).toBe(503)
+      expect((error as HTTPError).data).toBe(
+        JSON.stringify('quote not started: the router is busy\n'),
+      )
+      expect(global.fetch).toHaveBeenCalledTimes(2)
+    })
+
+    it.each([
+      ['no Retry-After', undefined],
+      ['a Retry-After over 5 s', '6'],
+      ['an HTTP-date Retry-After', 'Wed, 21 Oct 2026 07:28:00 GMT'],
+      ['a negative Retry-After', '-1'],
+    ])('throws a 503 with %s at once', async (_, retryAfter) => {
+      global.fetch = vi.fn().mockResolvedValue(busy(retryAfter))
+
+      await expect(
+        request('https://api.example.com/fetchQuote'),
+      ).rejects.toBeInstanceOf(HTTPError)
+      expect(global.fetch).toHaveBeenCalledTimes(1)
+    })
+
+    it('waits out a Retry-After of exactly 5 s', async () => {
+      global.fetch = vi
+        .fn()
+        .mockResolvedValueOnce(busy('5'))
+        .mockResolvedValueOnce(ok({ quote: '1' }))
+
+      const result = request('https://api.example.com/fetchQuote')
+      await vi.advanceTimersByTimeAsync(5000)
+
+      await expect(result).resolves.toEqual({ quote: '1' })
+      expect(global.fetch).toHaveBeenCalledTimes(2)
+    })
+
+    it('does not retry a 429', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ...busy('1'),
+        status: 429,
+        statusText: 'Too Many Requests',
+      })
+
+      await expect(
+        request('https://api.example.com/fetchQuote'),
+      ).rejects.toBeInstanceOf(HTTPError)
+      expect(global.fetch).toHaveBeenCalledTimes(1)
+    })
+
+    it('stops waiting when the signal aborts', async () => {
+      global.fetch = vi
+        .fn()
+        .mockResolvedValueOnce(busy('1'))
+        .mockResolvedValueOnce(ok({ quote: '1' }))
+      const controller = new AbortController()
+
+      const result = request('https://api.example.com/fetchQuote', {
+        signal: controller.signal,
+      })
+      const caught = result.catch((error: unknown) => error)
+      await vi.advanceTimersByTimeAsync(500)
+      controller.abort(new Error('cancelled'))
+
+      expect(await caught).toEqual(new Error('cancelled'))
+      await vi.advanceTimersByTimeAsync(1000)
+      expect(global.fetch).toHaveBeenCalledTimes(1)
+    })
+  })
+
   it('should handle array responses', async () => {
     const mockData = [{ id: 1 }, { id: 2 }, { id: 3 }]
 
