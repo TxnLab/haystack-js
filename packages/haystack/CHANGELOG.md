@@ -1,3 +1,10 @@
+# [3.6.0](https://github.com/TxnLab/haystack-js/compare/v3.5.0...v3.6.0) (2026-11-16)
+
+
+### Features
+
+* **client:** retry a quote the router is too busy for after its retry-after ([#48](https://github.com/TxnLab/haystack-js/issues/48)) ([8c37aa2](https://github.com/TxnLab/haystack-js/commit/8c37aa22ea7d60a03a63a7b6eaef8111a684cd4c))
+
 # [3.5.0](https://github.com/TxnLab/haystack-js/compare/v3.4.0...v3.5.0) (2026-11-08)
 
 
