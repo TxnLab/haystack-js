@@ -461,6 +461,8 @@ try {
 }
 ```
 
+API errors are thrown as `HTTPError`, with the response's `status` and its body in `data`. When the router is too busy to compute a quote, it answers `503` with `Retry-After: 1`. The SDK waits that second and retries once. If the router is still busy, it throws the `503` for you to retry later. A `429` (rate limit) is thrown at once: wait its `Retry-After` before retrying.
+
 ## API Reference
 
 ### RouterClient

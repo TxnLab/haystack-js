@@ -59,6 +59,7 @@ The public API is whatever `src/index.ts` re-exports: client, composer, constant
 - `Logger` is a static singleton. Each `RouterClient`/`SwapComposer` constructor overwrites the global level. Its `sanitize()` redacts `apiKey`, `algodToken`, signature values and `txnPayload`. Keep that redaction when you add log calls.
 - Asset and app IDs, and amounts, are `bigint` in `QuoteContext`/`SwapContext`/`SwapQuote`. The raw API response uses numbers and strings.
 - All HTTP goes through `utils.request()`, which throws `HTTPError`. Tests mock `../src/utils` or stub `algodClient.<method>().do()`. No network calls in tests.
+- `request()` retries once a `503` carrying a `Retry-After` of at most 5 s (the router's quote gate sheds a quote it's too busy for with `Retry-After: 1`). It waits that long and reads the first body to its end; aborting `options.signal` ends the wait. A `429`, a `503` without the header or with a longer or HTTP-date one, and a second busy `503` are thrown as `HTTPError`. Tests use fake timers for it.
 
 ## Commits and releases
 
