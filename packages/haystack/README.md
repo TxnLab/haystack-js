@@ -20,10 +20,10 @@ TypeScript/JavaScript SDK for [Haystack Order Router](https://txnlab.gitbook.io/
 
 | Tier | Key | Rate Limit | Use Case |
 | --- | --- | --- | --- |
-| **Free** | `hay_pk_4zhj33wahuxfplteyif5xpcgnm` | 30 requests/min per IP | Development, testing, low-volume integrations |
+| **Free** | `hay_pk_4zhj33wahuxfplteyif5xpcgnm` | 30 requests/min and 2,500 quotes/day per IP | Development, testing, low-volume integrations |
 | **Production** | Email [support@txnlab.dev](mailto:support@txnlab.dev) with the details in [Getting a key](https://txnlab.gitbook.io/haystack-dev/getting-started/api-keys#getting-a-key) | Higher limits | Production applications |
 
-The previous free key, `1b72df7e-1131-4449-8ce1-29b79dd3f51e`, is deprecated: its limit falls to 10 requests/min between December 1, 2026 and March 1, 2027, and it stops working on April 1, 2027.
+The previous free key, `1b72df7e-1131-4449-8ce1-29b79dd3f51e`, is deprecated: its limit is falling steadily from 30 to 5 requests/min per IP (and its daily quote limit with it), and it stops working on December 16, 2027.
 
 The SDK sends the key in the `X-API-Key` header, never in the URL, so it stays out of server logs, browser history and caches.
 
